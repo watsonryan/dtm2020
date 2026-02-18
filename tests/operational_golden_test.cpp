@@ -74,13 +74,10 @@ bool ParseCsv(const std::filesystem::path& path, std::vector<Row>& rows) {
 }
 
 std::filesystem::path ResolveOperationalCoeffPath() {
-  if (const char* direct = std::getenv("DTM2020_OPERATIONAL_COEFF_FILE"); direct != nullptr && *direct != '\0') {
-    return std::filesystem::path(direct);
+  if (std::string(DTM2020_OPERATIONAL_COEFF_FILE).size() > 0) {
+    return std::filesystem::path(DTM2020_OPERATIONAL_COEFF_FILE);
   }
-  if (const char* root = std::getenv("DTM2020_DATA_ROOT"); root != nullptr && *root != '\0') {
-    return std::filesystem::path(root) / "DTM_2020_F107_Kp.dat";
-  }
-  return {};
+  return std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/DTM_2020_F107_Kp.dat";
 }
 
 }  // namespace

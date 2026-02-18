@@ -5,15 +5,26 @@ set -euo pipefail
 # Purpose: Generate operational golden vectors from the MCM Fortran reference implementation.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MCM_ROOT="${MCM_ROOT:-}"
+REF_FORTRAN_ROOT="${REF_FORTRAN_ROOT:-}"
+REF_OPERATIONAL_F90="${REF_OPERATIONAL_F90:-}"
+REF_COEFF_FILE="${REF_COEFF_FILE:-}"
 OUT_CSV="${ROOT}/testdata/operational_vectors.csv"
 TMP_F90="$(mktemp /tmp/dtm2020_vecgen.XXXXXX.f90)"
 TMP_EXE="$(mktemp /tmp/dtm2020_vecgen.XXXXXX.exe)"
 trap 'rm -f "$TMP_F90" "$TMP_EXE"' EXIT
 
-if [[ -z "${MCM_ROOT}" ]]; then
-  echo "error: set MCM_ROOT to your local mcm checkout root"
-  echo "example: MCM_ROOT=/path/to/mcm tools/generate_operational_vectors_fortran.sh"
+if [[ -n "${REF_FORTRAN_ROOT}" ]]; then
+  if [[ -z "${REF_OPERATIONAL_F90}" ]]; then
+    REF_OPERATIONAL_F90="${REF_FORTRAN_ROOT}/src/libswamif/dtm2020_F107_Kp-subr_MCM.f90"
+  fi
+  if [[ -z "${REF_COEFF_FILE}" ]]; then
+    REF_COEFF_FILE="${REF_FORTRAN_ROOT}/data/DTM_2020_F107_Kp.dat"
+  fi
+fi
+
+if [[ -z "${REF_OPERATIONAL_F90}" || -z "${REF_COEFF_FILE}" ]]; then
+  echo "error: set REF_FORTRAN_ROOT or both REF_OPERATIONAL_F90 and REF_COEFF_FILE"
+  echo "example: REF_FORTRAN_ROOT=/path/to/reference_fortran tools/generate_operational_vectors_fortran.sh"
   exit 1
 fi
 
@@ -70,7 +81,7 @@ program vecgen
 end program vecgen
 F90
 
-python3 - <<'PY' "$TMP_F90" "$MCM_ROOT/data/DTM_2020_F107_Kp.dat" "$OUT_CSV"
+python3 - <<'PY' "$TMP_F90" "$REF_COEFF_FILE" "$OUT_CSV"
 import pathlib, sys
 f90 = pathlib.Path(sys.argv[1])
 coeff = sys.argv[2]
@@ -81,7 +92,7 @@ text = text.replace("__OUT__", out)
 f90.write_text(text)
 PY
 
-gfortran -std=legacy -O0 "$TMP_F90" "$MCM_ROOT/src/libswamif/dtm2020_F107_Kp-subr_MCM.f90" -o "$TMP_EXE"
+gfortran -std=legacy -O0 "$TMP_F90" "$REF_OPERATIONAL_F90" -o "$TMP_EXE"
 "$TMP_EXE"
 
 echo "Wrote ${OUT_CSV}"

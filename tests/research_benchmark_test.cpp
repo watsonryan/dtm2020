@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <string>
 
 #include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_research.hpp"
@@ -18,13 +19,10 @@ bool NearlyEqualRelative(double a, double b, double rel_tol, double abs_floor) {
 }
 
 std::filesystem::path ResolveResearchCoeffPath() {
-  if (const char* direct = std::getenv("DTM2020_RESEARCH_COEFF_FILE"); direct != nullptr && *direct != '\0') {
-    return std::filesystem::path(direct);
+  if (std::string(DTM2020_RESEARCH_COEFF_FILE).size() > 0) {
+    return std::filesystem::path(DTM2020_RESEARCH_COEFF_FILE);
   }
-  if (const char* root = std::getenv("DTM2020_DATA_ROOT"); root != nullptr && *root != '\0') {
-    return std::filesystem::path(root) / "DTM_2020_F30_ap60.dat";
-  }
-  return {};
+  return std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/DTM_2020_F30_ap60.dat";
 }
 
 }  // namespace

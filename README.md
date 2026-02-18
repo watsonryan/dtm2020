@@ -53,6 +53,23 @@ See `CMakePresets.json` for:
 - profile builds
 - macOS/Linux/Windows preset families
 
+### Install and package consumption
+
+Install locally:
+
+```bash
+cmake --preset macos-release
+cmake --build --preset macos-release -j
+cmake --install build/macos-release --prefix /tmp/dtm2020-install
+```
+
+Consume from another CMake project:
+
+```cmake
+find_package(dtm2020 CONFIG REQUIRED)
+target_link_libraries(your_target PRIVATE dtm2020::dtm2020)
+```
+
 ## Performance workflow
 
 Run the operational throughput benchmark with profile flags:
@@ -97,12 +114,19 @@ This performs:
 
 The model loaders expect DTM2020 coefficient files from your external data source.
 
-Set coefficient paths for optional external-data regression tests via environment:
-- `DTM2020_OPERATIONAL_COEFF_FILE=/path/to/DTM_2020_F107_Kp.dat`
-- `DTM2020_RESEARCH_COEFF_FILE=/path/to/DTM_2020_F30_ap60.dat`
-- or `DTM2020_DATA_ROOT=/path/to/data` (expects both files in that directory)
+External-data regression tests use CMake cache variables:
+- `DTM2020_OPERATIONAL_COEFF_FILE`
+- `DTM2020_RESEARCH_COEFF_FILE`
 
-If these are not set (or files are missing), external-data regression tests are skipped.
+Example:
+
+```bash
+cmake --preset macos-debug \
+  -DDTM2020_OPERATIONAL_COEFF_FILE=/path/to/DTM_2020_F107_Kp.dat \
+  -DDTM2020_RESEARCH_COEFF_FILE=/path/to/DTM_2020_F30_ap60.dat
+```
+
+If not provided, tests look for these filenames under `testdata/` and skip if missing.
 
 ## CLI usage (operational)
 
