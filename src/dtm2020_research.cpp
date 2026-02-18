@@ -67,6 +67,9 @@ float LocalTimeHoursToRadians(float hours) {
 }
 
 double NormalizeLongitudeDeg(double longitude_deg) {
+  if (longitude_deg >= 0.0 && longitude_deg < 360.0) {
+    return longitude_deg;
+  }
   double x = std::fmod(longitude_deg, 360.0);
   if (x < 0.0) {
     x += 360.0;
@@ -75,6 +78,9 @@ double NormalizeLongitudeDeg(double longitude_deg) {
 }
 
 double NormalizeLocalTimeHours(double local_time_h) {
+  if (local_time_h >= 0.0 && local_time_h < 24.0) {
+    return local_time_h;
+  }
   double x = std::fmod(local_time_h, 24.0);
   if (x < 0.0) {
     x += 24.0;

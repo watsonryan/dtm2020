@@ -63,6 +63,9 @@ float LocalTimeHoursToRadians(float hours) {
 }
 
 double NormalizeLongitudeDeg(double longitude_deg) {
+  if (longitude_deg >= 0.0 && longitude_deg < 360.0) {
+    return longitude_deg;
+  }
   double x = std::fmod(longitude_deg, 360.0);
   if (x < 0.0) {
     x += 360.0;
@@ -71,6 +74,9 @@ double NormalizeLongitudeDeg(double longitude_deg) {
 }
 
 double NormalizeLocalTimeHours(double local_time_h) {
+  if (local_time_h >= 0.0 && local_time_h < 24.0) {
+    return local_time_h;
+  }
   double x = std::fmod(local_time_h, 24.0);
   if (x < 0.0) {
     x += 24.0;
@@ -441,16 +447,19 @@ Result<Outputs, Error> Dtm2020Operational::Evaluate(const OperationalInputs& in)
   const float gdelo = Gldtm(f, fbar, akp, day, o, da, 1.0F, longitude_rad, l, hc);
   dbase[2] = o[1] * std::exp(gdelo);
 
-  F1 az2_input = az2;
+  const F1* az2_eval = &az2;
+  F1 az2_input{};
   if (options_.emulate_mcm_transition && alti <= 150.0F) {
+    az2_input = az2;
     const float atten = (alti - 120.0F) * (alti - 120.0F) * (alti - 120.0F) / 27000.0F;
     for (int idx : {21, 22, 23, 26, 27, 28, 31, 33, 35, 36, 90, 91}) {
       az2_input[idx] = atten * az2[idx];
     }
+    az2_eval = &az2_input;
   }
 
   da.fill(0.0F);
-  const float gdelaz2 = Gldtm(f, fbar, akp, day, az2_input, da, 1.0F, longitude_rad, l, hc);
+  const float gdelaz2 = Gldtm(f, fbar, akp, day, *az2_eval, da, 1.0F, longitude_rad, l, hc);
   dbase[3] = az2[1] * std::exp(gdelaz2);
 
   da.fill(0.0F);
