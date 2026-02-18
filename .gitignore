@@ -1,2 +1,26 @@
 build/
 .DS_Store
+
+# CMake / CTest
+CMakeUserPresets.json
+CMakeCache.txt
+CMakeFiles/
+Testing/
+CTestTestfile.cmake
+cmake_install.cmake
+compile_commands.json
+install_manifest.txt
+
+# Profiling / coverage artifacts
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+*.gcov
+*.dSYM/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
