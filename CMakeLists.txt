@@ -9,6 +9,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(DTM2020_BUILD_TESTS "Build tests" ON)
 option(DTM2020_STRICT_FP "Use strict floating-point flags" ON)
 option(DTM2020_ENABLE_RESEARCH "Build optional research-model scaffold" ON)
+set(DTM2020_SANITIZER "" CACHE STRING "Sanitizer to use: '', address, undefined, thread")
+option(DTM2020_ENABLE_PROFILE "Enable profiling-oriented optimization flags" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(warnings)
@@ -39,12 +41,14 @@ if(DTM2020_STRICT_FP)
 endif()
 
 dtm2020_apply_common_warnings(dtm2020)
+dtm2020_apply_runtime_flags(dtm2020)
 
 add_executable(dtm2020_cli
   examples/dtm2020_cli.cpp
 )
 target_link_libraries(dtm2020_cli PRIVATE dtm2020)
 dtm2020_apply_common_warnings(dtm2020_cli)
+dtm2020_apply_runtime_flags(dtm2020_cli)
 
 if(DTM2020_BUILD_TESTS)
   include(CTest)

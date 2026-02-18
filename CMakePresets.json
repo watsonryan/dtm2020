@@ -12,63 +12,153 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "DTM2020_BUILD_TESTS": "ON",
+        "DTM2020_ENABLE_RESEARCH": "ON"
       }
     },
     {
-      "name": "macos-debug",
+      "name": "base-debug",
+      "hidden": true,
       "inherits": ["base"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "base-release",
+      "hidden": true,
+      "inherits": ["base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "base-asan",
+      "hidden": true,
+      "inherits": ["base-debug"],
+      "cacheVariables": {
+        "DTM2020_SANITIZER": "address"
+      }
+    },
+    {
+      "name": "base-ubsan",
+      "hidden": true,
+      "inherits": ["base-debug"],
+      "cacheVariables": {
+        "DTM2020_SANITIZER": "undefined"
+      }
+    },
+    {
+      "name": "base-tsan",
+      "hidden": true,
+      "inherits": ["base-debug"],
+      "cacheVariables": {
+        "DTM2020_SANITIZER": "thread"
+      }
+    },
+    {
+      "name": "base-profile",
+      "hidden": true,
+      "inherits": ["base-release"],
+      "cacheVariables": {
+        "DTM2020_ENABLE_PROFILE": "ON"
+      }
+    },
+
+    {
+      "name": "macos-debug",
+      "inherits": ["base-debug"]
     },
     {
       "name": "macos-release",
-      "inherits": ["base"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "inherits": ["base-release"]
     },
     {
+      "name": "macos-asan",
+      "inherits": ["base-asan"]
+    },
+    {
+      "name": "macos-ubsan",
+      "inherits": ["base-ubsan"]
+    },
+    {
+      "name": "macos-profile",
+      "inherits": ["base-profile"]
+    },
+
+    {
       "name": "linux-debug",
-      "inherits": ["base"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": ["base-debug"]
     },
     {
       "name": "linux-release",
-      "inherits": ["base"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "inherits": ["base-release"]
     },
     {
+      "name": "linux-asan",
+      "inherits": ["base-asan"]
+    },
+    {
+      "name": "linux-ubsan",
+      "inherits": ["base-ubsan"]
+    },
+    {
+      "name": "linux-tsan",
+      "inherits": ["base-tsan"]
+    },
+    {
+      "name": "linux-profile",
+      "inherits": ["base-profile"]
+    },
+
+    {
       "name": "windows-debug",
-      "inherits": ["base"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": ["base-debug"]
     },
     {
       "name": "windows-release",
-      "inherits": ["base"],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
-      }
+      "inherits": ["base-release"]
+    },
+    {
+      "name": "windows-asan",
+      "inherits": ["base-asan"]
+    },
+    {
+      "name": "windows-profile",
+      "inherits": ["base-profile"]
     }
   ],
   "buildPresets": [
     { "name": "macos-debug", "configurePreset": "macos-debug" },
     { "name": "macos-release", "configurePreset": "macos-release" },
+    { "name": "macos-asan", "configurePreset": "macos-asan" },
+    { "name": "macos-ubsan", "configurePreset": "macos-ubsan" },
+    { "name": "macos-profile", "configurePreset": "macos-profile" },
+
     { "name": "linux-debug", "configurePreset": "linux-debug" },
     { "name": "linux-release", "configurePreset": "linux-release" },
+    { "name": "linux-asan", "configurePreset": "linux-asan" },
+    { "name": "linux-ubsan", "configurePreset": "linux-ubsan" },
+    { "name": "linux-tsan", "configurePreset": "linux-tsan" },
+    { "name": "linux-profile", "configurePreset": "linux-profile" },
+
     { "name": "windows-debug", "configurePreset": "windows-debug" },
-    { "name": "windows-release", "configurePreset": "windows-release" }
+    { "name": "windows-release", "configurePreset": "windows-release" },
+    { "name": "windows-asan", "configurePreset": "windows-asan" },
+    { "name": "windows-profile", "configurePreset": "windows-profile" }
   ],
   "testPresets": [
     { "name": "macos-debug", "configurePreset": "macos-debug" },
+    { "name": "macos-asan", "configurePreset": "macos-asan" },
+    { "name": "macos-ubsan", "configurePreset": "macos-ubsan" },
+
     { "name": "linux-debug", "configurePreset": "linux-debug" },
-    { "name": "windows-debug", "configurePreset": "windows-debug" }
+    { "name": "linux-asan", "configurePreset": "linux-asan" },
+    { "name": "linux-ubsan", "configurePreset": "linux-ubsan" },
+    { "name": "linux-tsan", "configurePreset": "linux-tsan" },
+
+    { "name": "windows-debug", "configurePreset": "windows-debug" },
+    { "name": "windows-asan", "configurePreset": "windows-asan" }
   ]
 }
