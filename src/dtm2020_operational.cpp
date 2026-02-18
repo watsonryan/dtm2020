@@ -252,39 +252,6 @@ float Gldtm(const std::array<float, 3>& f,
   return f0 + fp * f1f;
 }
 
-void PopulateFromCoefficients(const Dtm2020Operational::Coefficients& c,
-                              F1& tt,
-                              F1& h,
-                              F1& he,
-                              F1& o,
-                              F1& az2,
-                              F1& o2,
-                              F1& az,
-                              F1& t0,
-                              F1& tp) {
-  tt.fill(0.0F);
-  h.fill(0.0F);
-  he.fill(0.0F);
-  o.fill(0.0F);
-  az2.fill(0.0F);
-  o2.fill(0.0F);
-  az.fill(0.0F);
-  t0.fill(0.0F);
-  tp.fill(0.0F);
-  for (int i = 0; i < kNlatm; ++i) {
-    const int fi = i + 1;
-    tt[fi] = c.tt[i];
-    h[fi] = c.h[i];
-    he[fi] = c.he[i];
-    o[fi] = c.o[i];
-    az2[fi] = c.az2[i];
-    o2[fi] = c.o2[i];
-    az[fi] = c.az[i];
-    t0[fi] = c.t0[i];
-    tp[fi] = c.tp[i];
-  }
-}
-
 }  // namespace
 
 Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
@@ -330,15 +297,16 @@ Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
     float dt0 = 0.0F;
     float dtp = 0.0F;
 
-    if (!ParseRealToken(in, coeffs.tt[i]) || !ParseRealToken(in, dtt) ||
-        !ParseRealToken(in, coeffs.h[i]) || !ParseRealToken(in, dh) ||
-        !ParseRealToken(in, coeffs.he[i]) || !ParseRealToken(in, dhe) ||
-        !ParseRealToken(in, coeffs.o[i]) || !ParseRealToken(in, dox) ||
-        !ParseRealToken(in, coeffs.az2[i]) || !ParseRealToken(in, daz2) ||
-        !ParseRealToken(in, coeffs.o2[i]) || !ParseRealToken(in, do2) ||
-        !ParseRealToken(in, coeffs.az[i]) || !ParseRealToken(in, daz) ||
-        !ParseRealToken(in, coeffs.t0[i]) || !ParseRealToken(in, dt0) ||
-        !ParseRealToken(in, coeffs.tp[i]) || !ParseRealToken(in, dtp)) {
+    const int fi = i + 1;
+    if (!ParseRealToken(in, coeffs.tt[fi]) || !ParseRealToken(in, dtt) ||
+        !ParseRealToken(in, coeffs.h[fi]) || !ParseRealToken(in, dh) ||
+        !ParseRealToken(in, coeffs.he[fi]) || !ParseRealToken(in, dhe) ||
+        !ParseRealToken(in, coeffs.o[fi]) || !ParseRealToken(in, dox) ||
+        !ParseRealToken(in, coeffs.az2[fi]) || !ParseRealToken(in, daz2) ||
+        !ParseRealToken(in, coeffs.o2[fi]) || !ParseRealToken(in, do2) ||
+        !ParseRealToken(in, coeffs.az[fi]) || !ParseRealToken(in, daz) ||
+        !ParseRealToken(in, coeffs.t0[fi]) || !ParseRealToken(in, dt0) ||
+        !ParseRealToken(in, coeffs.tp[fi]) || !ParseRealToken(in, dtp)) {
       return Result<Dtm2020Operational, Error>::Err(
           {ErrorCode::kFileParseFailed, "Failed while parsing coefficient row"});
     }
@@ -388,8 +356,15 @@ Result<Outputs, Error> Dtm2020Operational::Evaluate(const OperationalInputs& in)
   constexpr float gsurf = 980.665F;
   constexpr float zlb = 120.0F;
 
-  F1 tt, h, he, o, az2, o2, az, t0, tp;
-  PopulateFromCoefficients(coeffs_, tt, h, he, o, az2, o2, az, t0, tp);
+  const F1& tt = coeffs_.tt;
+  const F1& h = coeffs_.h;
+  const F1& he = coeffs_.he;
+  const F1& o = coeffs_.o;
+  const F1& az2 = coeffs_.az2;
+  const F1& o2 = coeffs_.o2;
+  const F1& az = coeffs_.az;
+  const F1& t0 = coeffs_.t0;
+  const F1& tp = coeffs_.tp;
 
   const float c = std::sin(latitude_rad);
   const float c2 = c * c;

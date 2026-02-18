@@ -86,6 +86,19 @@ std::vector<dtm2020::OperationalInputs> MakeCorpus() {
   return corpus;
 }
 
+int ReadPositiveIntEnv(const char* name, int fallback) {
+  const char* raw = std::getenv(name);
+  if (raw == nullptr || *raw == '\0') {
+    return fallback;
+  }
+  char* end = nullptr;
+  const long v = std::strtol(raw, &end, 10);
+  if (end == raw || *end != '\0' || v <= 0 || v > 1000000) {
+    return fallback;
+  }
+  return static_cast<int>(v);
+}
+
 }  // namespace
 
 int main() {
@@ -102,8 +115,8 @@ int main() {
   }
 
   const auto corpus = MakeCorpus();
-  constexpr int kSamples = 15;
-  constexpr int kIterations = 80;
+  const int kSamples = ReadPositiveIntEnv("DTM2020_PERF_SAMPLES", 15);
+  const int kIterations = ReadPositiveIntEnv("DTM2020_PERF_ITERATIONS", 80);
 
   volatile double sink = 0.0;
   for (int i = 0; i < 2; ++i) {

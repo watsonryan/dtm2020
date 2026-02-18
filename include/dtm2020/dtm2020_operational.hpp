@@ -106,15 +106,16 @@ class Dtm2020Operational {
 
   struct Coefficients {
     static constexpr int kNlatm = 96;
-    std::array<float, kNlatm> tt{};
-    std::array<float, kNlatm> h{};
-    std::array<float, kNlatm> he{};
-    std::array<float, kNlatm> o{};
-    std::array<float, kNlatm> az2{};
-    std::array<float, kNlatm> o2{};
-    std::array<float, kNlatm> az{};
-    std::array<float, kNlatm> t0{};
-    std::array<float, kNlatm> tp{};
+    // 1-based coefficient layout; index 0 is intentionally unused for Fortran parity.
+    std::array<float, kNlatm + 1> tt{};
+    std::array<float, kNlatm + 1> h{};
+    std::array<float, kNlatm + 1> he{};
+    std::array<float, kNlatm + 1> o{};
+    std::array<float, kNlatm + 1> az2{};
+    std::array<float, kNlatm + 1> o2{};
+    std::array<float, kNlatm + 1> az{};
+    std::array<float, kNlatm + 1> t0{};
+    std::array<float, kNlatm + 1> tp{};
   };
 
  private:

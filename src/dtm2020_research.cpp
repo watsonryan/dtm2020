@@ -110,39 +110,6 @@ bool ParseFixedIntField(const std::string& line, std::size_t pos, std::size_t le
   return true;
 }
 
-void PopulateFromCoefficients(const Dtm2020Research::Coefficients& c,
-                              F1& tt,
-                              F1& h,
-                              F1& he,
-                              F1& o,
-                              F1& az2,
-                              F1& o2,
-                              F1& az,
-                              F1& t0,
-                              F1& tp) {
-  tt.fill(0.0F);
-  h.fill(0.0F);
-  he.fill(0.0F);
-  o.fill(0.0F);
-  az2.fill(0.0F);
-  o2.fill(0.0F);
-  az.fill(0.0F);
-  t0.fill(0.0F);
-  tp.fill(0.0F);
-  for (int i = 0; i < kNlatm; ++i) {
-    const int fi = i + 1;
-    tt[fi] = c.tt[i];
-    h[fi] = c.h[i];
-    he[fi] = c.he[i];
-    o[fi] = c.o[i];
-    az2[fi] = c.az2[i];
-    o2[fi] = c.o2[i];
-    az[fi] = c.az[i];
-    t0[fi] = c.t0[i];
-    tp[fi] = c.tp[i];
-  }
-}
-
 float BintOpenEnded(float ap) {
   static constexpr std::array<float, 38> aap = {
       0.0F, 2.0F, 3.0F, 4.0F, 5.0F, 6.0F, 7.0F, 9.0F, 12.0F, 15.0F, 18.0F, 22.0F, 27.0F,
@@ -476,15 +443,16 @@ Result<Dtm2020Research, Error> Dtm2020Research::LoadFromFile(const std::filesyst
           {ErrorCode::kFileParseFailed, "Unexpected coefficient row index"});
     }
 
-    coeffs.tt[i] = values[0];
-    coeffs.h[i] = values[1];
-    coeffs.he[i] = values[2];
-    coeffs.o[i] = values[3];
-    coeffs.az2[i] = values[4];
-    coeffs.o2[i] = values[5];
-    coeffs.az[i] = values[6];
-    coeffs.t0[i] = values[7];
-    coeffs.tp[i] = values[8];
+    const int fi = i + 1;
+    coeffs.tt[fi] = values[0];
+    coeffs.h[fi] = values[1];
+    coeffs.he[fi] = values[2];
+    coeffs.o[fi] = values[3];
+    coeffs.az2[fi] = values[4];
+    coeffs.o2[fi] = values[5];
+    coeffs.az[fi] = values[6];
+    coeffs.t0[fi] = values[7];
+    coeffs.tp[fi] = values[8];
   }
 
   return Result<Dtm2020Research, Error>::Ok(Dtm2020Research(coeffs));
@@ -567,8 +535,15 @@ Result<Outputs, Error> Dtm2020Research::Evaluate(const ResearchInputs& in) const
   constexpr float gsurf = 980.665F;
   constexpr float zlb = 120.0F;
 
-  F1 tt, h, he, o, az2, o2, az, t0, tp;
-  PopulateFromCoefficients(coeffs_, tt, h, he, o, az2, o2, az, t0, tp);
+  const F1& tt = coeffs_.tt;
+  const F1& h = coeffs_.h;
+  const F1& he = coeffs_.he;
+  const F1& o = coeffs_.o;
+  const F1& az2 = coeffs_.az2;
+  const F1& o2 = coeffs_.o2;
+  const F1& az = coeffs_.az;
+  const F1& t0 = coeffs_.t0;
+  const F1& tp = coeffs_.tp;
 
   const float c = std::sin(alat);
   const float c2 = c * c;
