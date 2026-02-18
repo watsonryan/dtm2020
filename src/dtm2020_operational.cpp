@@ -10,6 +10,7 @@
 #include <fstream>
 #include <limits>
 #include <optional>
+#include <sstream>
 #include <string>
 
 #include "dtm2020/sigma_uncertainty.hpp"
@@ -84,16 +85,28 @@ double NormalizeLocalTimeHours(double local_time_h) {
   return x;
 }
 
-bool ParseRealToken(std::istream& in, float& out) {
-  std::string token;
-  in >> token;
-  if (!in) {
+bool ParseFixedRealField(const std::string& line, std::size_t pos, std::size_t len, float& out) {
+  if (pos + len > line.size()) {
     return false;
   }
+  std::string token = line.substr(pos, len);
   std::replace(token.begin(), token.end(), 'D', 'E');
   std::replace(token.begin(), token.end(), 'd', 'e');
   try {
     out = std::stof(token);
+  } catch (...) {
+    return false;
+  }
+  return true;
+}
+
+bool ParseFixedIntField(const std::string& line, std::size_t pos, std::size_t len, int& out) {
+  if (pos + len > line.size()) {
+    return false;
+  }
+  std::string token = line.substr(pos, len);
+  try {
+    out = std::stoi(token);
   } catch (...) {
     return false;
   }
@@ -283,8 +296,13 @@ Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
   std::getline(in, title);
 
   int npdtm = 0;
-  in >> npdtm;
-  if (!in || npdtm <= 0 || npdtm > kNlatm) {
+  {
+    std::string second_line;
+    std::getline(in, second_line);
+    std::stringstream ss(second_line);
+    ss >> npdtm;
+  }
+  if (npdtm <= 0 || npdtm > kNlatm) {
     return Result<Dtm2020Operational, Error>::Err(
         MakeError(ErrorCode::kFileParseFailed,
                   "Invalid npdtm in coefficient file",
@@ -293,41 +311,84 @@ Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
   }
 
   for (int i = 0; i < npdtm; ++i) {
+    std::string row;
+    std::getline(in, row);
+    if (row.empty()) {
+      --i;
+      continue;
+    }
+
     int ni = 0;
-    if (!(in >> ni)) {
+    std::array<float, 9> values{};
+    bool parsed = false;
+
+    if (ParseFixedIntField(row, 0, 4, ni)) {
+      parsed = true;
+      for (int k = 0; k < 9; ++k) {
+        const std::size_t vpos = 4 + static_cast<std::size_t>(k) * 22;
+        const std::size_t upos = 17 + static_cast<std::size_t>(k) * 22;
+        float unc = 0.0F;
+        if (!ParseFixedRealField(row, vpos, 13, values[k]) || !ParseFixedRealField(row, upos, 9, unc)) {
+          parsed = false;
+          break;
+        }
+      }
+    }
+
+    if (!parsed) {
+      std::stringstream ss(row);
+      ss >> ni;
+      if (!ss) {
+        return Result<Dtm2020Operational, Error>::Err(
+            MakeError(ErrorCode::kFileParseFailed,
+                      "Failed while parsing coefficient index",
+                      coeff_file.string(),
+                      "Dtm2020Operational::LoadFromFile"));
+      }
+
+      for (int k = 0; k < 9; ++k) {
+        std::string vtok;
+        std::string utok;
+        ss >> vtok >> utok;
+        if (!ss) {
+          return Result<Dtm2020Operational, Error>::Err(
+              MakeError(ErrorCode::kFileParseFailed,
+                        "Failed while parsing tokenized coefficient row",
+                        coeff_file.string(),
+                        "Dtm2020Operational::LoadFromFile"));
+        }
+        std::replace(vtok.begin(), vtok.end(), 'D', 'E');
+        std::replace(vtok.begin(), vtok.end(), 'd', 'e');
+        try {
+          values[k] = std::stof(vtok);
+        } catch (...) {
+          return Result<Dtm2020Operational, Error>::Err(
+              MakeError(ErrorCode::kFileParseFailed,
+                        "Failed while parsing coefficient value token",
+                        coeff_file.string(),
+                        "Dtm2020Operational::LoadFromFile"));
+        }
+      }
+    }
+
+    if (ni != i + 1) {
       return Result<Dtm2020Operational, Error>::Err(
           MakeError(ErrorCode::kFileParseFailed,
-                    "Failed while parsing coefficient index",
+                    "Unexpected coefficient row index",
                     coeff_file.string(),
                     "Dtm2020Operational::LoadFromFile"));
     }
-
-    float dtt = 0.0F;
-    float dh = 0.0F;
-    float dhe = 0.0F;
-    float dox = 0.0F;
-    float daz2 = 0.0F;
-    float do2 = 0.0F;
-    float daz = 0.0F;
-    float dt0 = 0.0F;
-    float dtp = 0.0F;
 
     const int fi = i + 1;
-    if (!ParseRealToken(in, coeffs.tt[fi]) || !ParseRealToken(in, dtt) ||
-        !ParseRealToken(in, coeffs.h[fi]) || !ParseRealToken(in, dh) ||
-        !ParseRealToken(in, coeffs.he[fi]) || !ParseRealToken(in, dhe) ||
-        !ParseRealToken(in, coeffs.o[fi]) || !ParseRealToken(in, dox) ||
-        !ParseRealToken(in, coeffs.az2[fi]) || !ParseRealToken(in, daz2) ||
-        !ParseRealToken(in, coeffs.o2[fi]) || !ParseRealToken(in, do2) ||
-        !ParseRealToken(in, coeffs.az[fi]) || !ParseRealToken(in, daz) ||
-        !ParseRealToken(in, coeffs.t0[fi]) || !ParseRealToken(in, dt0) ||
-        !ParseRealToken(in, coeffs.tp[fi]) || !ParseRealToken(in, dtp)) {
-      return Result<Dtm2020Operational, Error>::Err(
-          MakeError(ErrorCode::kFileParseFailed,
-                    "Failed while parsing coefficient row",
-                    coeff_file.string(),
-                    "Dtm2020Operational::LoadFromFile"));
-    }
+    coeffs.tt[fi] = values[0];
+    coeffs.h[fi] = values[1];
+    coeffs.he[fi] = values[2];
+    coeffs.o[fi] = values[3];
+    coeffs.az2[fi] = values[4];
+    coeffs.o2[fi] = values[5];
+    coeffs.az[fi] = values[6];
+    coeffs.t0[fi] = values[7];
+    coeffs.tp[fi] = values[8];
   }
 
   return Result<Dtm2020Operational, Error>::Ok(Dtm2020Operational(coeffs, options));
