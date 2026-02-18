@@ -1,0 +1,7 @@
+function(dtm2020_apply_strict_fp_flags target_name)
+  if(MSVC)
+    target_compile_options(${target_name} PRIVATE /fp:precise)
+  else()
+    target_compile_options(${target_name} PRIVATE -ffp-contract=off)
+  endif()
+endfunction()
