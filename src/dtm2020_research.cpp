@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <fstream>
 #include <optional>
+#include <sstream>
 #include <string>
 
 namespace dtm2020 {
@@ -82,16 +83,28 @@ double NormalizeLocalTimeHours(double local_time_h) {
   return x;
 }
 
-bool ParseRealToken(std::istream& in, float& out) {
-  std::string token;
-  in >> token;
-  if (!in) {
+bool ParseFixedRealField(const std::string& line, std::size_t pos, std::size_t len, float& out) {
+  if (pos + len > line.size()) {
     return false;
   }
+  std::string token = line.substr(pos, len);
   std::replace(token.begin(), token.end(), 'D', 'E');
   std::replace(token.begin(), token.end(), 'd', 'e');
   try {
     out = std::stof(token);
+  } catch (...) {
+    return false;
+  }
+  return true;
+}
+
+bool ParseFixedIntField(const std::string& line, std::size_t pos, std::size_t len, int& out) {
+  if (pos + len > line.size()) {
+    return false;
+  }
+  std::string token = line.substr(pos, len);
+  try {
+    out = std::stoi(token);
   } catch (...) {
     return false;
   }
@@ -396,43 +409,84 @@ std::optional<Dtm2020Research> Dtm2020Research::LoadFromFile(const std::filesyst
 
   std::string title;
   std::getline(in, title);
+  std::string second_line;
+  std::getline(in, second_line);
 
   int npdtm = 0;
-  in >> npdtm;
-  if (!in || npdtm <= 0 || npdtm > kNlatm) {
+  {
+    std::stringstream ss(second_line);
+    ss >> npdtm;
+  }
+  if (npdtm <= 0 || npdtm > kNlatm) {
     error = {ErrorCode::kFileParseFailed, "Invalid npdtm in coefficient file"};
     return std::nullopt;
   }
 
   for (int i = 0; i < npdtm; ++i) {
+    std::string row;
+    std::getline(in, row);
+    if (row.empty()) {
+      --i;
+      continue;
+    }
+
     int ni = 0;
-    if (!(in >> ni)) {
-      error = {ErrorCode::kFileParseFailed, "Failed while parsing coefficient index"};
+    std::array<float, 9> values{};
+    bool parsed = false;
+
+    if (ParseFixedIntField(row, 0, 4, ni)) {
+      parsed = true;
+      for (int k = 0; k < 9; ++k) {
+        const std::size_t vpos = 4 + static_cast<std::size_t>(k) * 22;
+        const std::size_t upos = 17 + static_cast<std::size_t>(k) * 22;
+        float unc = 0.0F;
+        if (!ParseFixedRealField(row, vpos, 13, values[k]) || !ParseFixedRealField(row, upos, 9, unc)) {
+          parsed = false;
+          break;
+        }
+      }
+    }
+
+    if (!parsed) {
+      std::stringstream ss(row);
+      ss >> ni;
+      if (!ss) {
+        error = {ErrorCode::kFileParseFailed, "Failed while parsing coefficient index"};
+        return std::nullopt;
+      }
+      for (int k = 0; k < 9; ++k) {
+        std::string vtok;
+        std::string utok;
+        ss >> vtok >> utok;
+        if (!ss) {
+          error = {ErrorCode::kFileParseFailed, "Failed while parsing tokenized coefficient row"};
+          return std::nullopt;
+        }
+        std::replace(vtok.begin(), vtok.end(), 'D', 'E');
+        std::replace(vtok.begin(), vtok.end(), 'd', 'e');
+        try {
+          values[k] = std::stof(vtok);
+        } catch (...) {
+          error = {ErrorCode::kFileParseFailed, "Failed while parsing coefficient value token"};
+          return std::nullopt;
+        }
+      }
+    }
+
+    if (ni != i + 1) {
+      error = {ErrorCode::kFileParseFailed, "Unexpected coefficient row index"};
       return std::nullopt;
     }
 
-    float dtt = 0.0F;
-    float dh = 0.0F;
-    float dhe = 0.0F;
-    float dox = 0.0F;
-    float daz2 = 0.0F;
-    float do2 = 0.0F;
-    float daz = 0.0F;
-    float dt0 = 0.0F;
-    float dtp = 0.0F;
-
-    if (!ParseRealToken(in, coeffs.tt[i]) || !ParseRealToken(in, dtt) ||
-        !ParseRealToken(in, coeffs.h[i]) || !ParseRealToken(in, dh) ||
-        !ParseRealToken(in, coeffs.he[i]) || !ParseRealToken(in, dhe) ||
-        !ParseRealToken(in, coeffs.o[i]) || !ParseRealToken(in, dox) ||
-        !ParseRealToken(in, coeffs.az2[i]) || !ParseRealToken(in, daz2) ||
-        !ParseRealToken(in, coeffs.o2[i]) || !ParseRealToken(in, do2) ||
-        !ParseRealToken(in, coeffs.az[i]) || !ParseRealToken(in, daz) ||
-        !ParseRealToken(in, coeffs.t0[i]) || !ParseRealToken(in, dt0) ||
-        !ParseRealToken(in, coeffs.tp[i]) || !ParseRealToken(in, dtp)) {
-      error = {ErrorCode::kFileParseFailed, "Failed while parsing coefficient row"};
-      return std::nullopt;
-    }
+    coeffs.tt[i] = values[0];
+    coeffs.h[i] = values[1];
+    coeffs.he[i] = values[2];
+    coeffs.o[i] = values[3];
+    coeffs.az2[i] = values[4];
+    coeffs.o2[i] = values[5];
+    coeffs.az[i] = values[6];
+    coeffs.t0[i] = values[7];
+    coeffs.tp[i] = values[8];
   }
 
   error = {};
