@@ -32,6 +32,12 @@ endif()
 
 dtm2020_apply_common_warnings(dtm2020)
 
+add_executable(dtm2020_cli
+  examples/dtm2020_cli.cpp
+)
+target_link_libraries(dtm2020_cli PRIVATE dtm2020)
+dtm2020_apply_common_warnings(dtm2020_cli)
+
 if(DTM2020_BUILD_TESTS)
   include(CTest)
   if(BUILD_TESTING)
