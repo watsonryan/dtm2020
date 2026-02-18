@@ -25,10 +25,9 @@ int main() {
     return EXIT_SUCCESS;
   }
 
-  dtm2020::Error error;
-  auto model = dtm2020::Dtm2020Research::LoadFromFile(coeff_file, error);
-  if (!model || error.code != dtm2020::ErrorCode::kNone) {
-    std::cerr << "load failed: " << error.message << "\n";
+  auto model = dtm2020::Dtm2020Research::LoadFromFile(coeff_file);
+  if (!model) {
+    std::cerr << "load failed: " << model.error().message << "\n";
     return EXIT_FAILURE;
   }
 
@@ -60,19 +59,19 @@ int main() {
     in.altitude_km = c.alt_km;
     in.f30 = c.f30;
     in.f30m = c.f30m;
-    const auto out = model->Evaluate(in, error);
-    if (error.code != dtm2020::ErrorCode::kNone) {
-      std::cerr << "eval failed: " << error.message << "\n";
+    const auto out = model.value().Evaluate(in);
+    if (!out) {
+      std::cerr << "eval failed: " << out.error().message << "\n";
       return EXIT_FAILURE;
     }
 
-    const bool ok_tz = NearlyEqualRelative(out.temperature_k, c.tz, 2e-3, 0.8);
-    const bool ok_tinf = NearlyEqualRelative(out.exospheric_temp_k, c.tinf, 2e-3, 0.8);
-    const bool ok_ro = NearlyEqualRelative(out.density_g_cm3, c.ro, 1e-1, 1e-18);
+    const bool ok_tz = NearlyEqualRelative(out.value().temperature_k, c.tz, 2e-3, 0.8);
+    const bool ok_tinf = NearlyEqualRelative(out.value().exospheric_temp_k, c.tinf, 2e-3, 0.8);
+    const bool ok_ro = NearlyEqualRelative(out.value().density_g_cm3, c.ro, 1e-1, 1e-18);
     if (!ok_tz || !ok_tinf || !ok_ro) {
       std::cerr << "case alt=" << c.alt_km << " f30=" << c.f30 << " f30m=" << c.f30m
-                << " got(tz,tinf,ro)=(" << out.temperature_k << "," << out.exospheric_temp_k << ","
-                << out.density_g_cm3 << ")"
+                << " got(tz,tinf,ro)=(" << out.value().temperature_k << ","
+                << out.value().exospheric_temp_k << "," << out.value().density_g_cm3 << ")"
                 << " expected=(" << c.tz << "," << c.tinf << "," << c.ro << ")\n";
       return EXIT_FAILURE;
     }

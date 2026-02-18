@@ -82,9 +82,8 @@ int main() {
     return EXIT_SUCCESS;
   }
 
-  dtm2020::Error error;
-  auto model = dtm2020::Dtm2020Operational::LoadFromFile(coeff_file, error);
-  if (!model || error.code != dtm2020::ErrorCode::kNone) {
+  auto model = dtm2020::Dtm2020Operational::LoadFromFile(coeff_file);
+  if (!model) {
     return EXIT_FAILURE;
   }
 
@@ -94,21 +93,21 @@ int main() {
   }
 
   for (const auto& row : rows) {
-    const auto got = model->Evaluate(row.in, error);
-    if (error.code != dtm2020::ErrorCode::kNone) {
+    const auto got = model.value().Evaluate(row.in);
+    if (!got) {
       return EXIT_FAILURE;
     }
 
-    if (!NearlyEqualRelative(got.temperature_k, row.out.temperature_k, 1e-5, 1e-4) ||
-        !NearlyEqualRelative(got.exospheric_temp_k, row.out.exospheric_temp_k, 1e-5, 1e-4) ||
-        !NearlyEqualRelative(got.density_g_cm3, row.out.density_g_cm3, 1e-6, 1e-18) ||
-        !NearlyEqualRelative(got.mean_mol_mass_g, row.out.mean_mol_mass_g, 1e-6, 1e-9) ||
-        !NearlyEqualRelative(got.d_h_g_cm3, row.out.d_h_g_cm3, 1e-6, 1e-20) ||
-        !NearlyEqualRelative(got.d_he_g_cm3, row.out.d_he_g_cm3, 1e-6, 1e-20) ||
-        !NearlyEqualRelative(got.d_o_g_cm3, row.out.d_o_g_cm3, 1e-6, 1e-20) ||
-        !NearlyEqualRelative(got.d_n2_g_cm3, row.out.d_n2_g_cm3, 1e-6, 1e-20) ||
-        !NearlyEqualRelative(got.d_o2_g_cm3, row.out.d_o2_g_cm3, 1e-6, 1e-20) ||
-        !NearlyEqualRelative(got.d_n_g_cm3, row.out.d_n_g_cm3, 1e-6, 1e-20)) {
+    if (!NearlyEqualRelative(got.value().temperature_k, row.out.temperature_k, 1e-5, 1e-4) ||
+        !NearlyEqualRelative(got.value().exospheric_temp_k, row.out.exospheric_temp_k, 1e-5, 1e-4) ||
+        !NearlyEqualRelative(got.value().density_g_cm3, row.out.density_g_cm3, 1e-6, 1e-18) ||
+        !NearlyEqualRelative(got.value().mean_mol_mass_g, row.out.mean_mol_mass_g, 1e-6, 1e-9) ||
+        !NearlyEqualRelative(got.value().d_h_g_cm3, row.out.d_h_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.value().d_he_g_cm3, row.out.d_he_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.value().d_o_g_cm3, row.out.d_o_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.value().d_n2_g_cm3, row.out.d_n2_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.value().d_o2_g_cm3, row.out.d_o2_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.value().d_n_g_cm3, row.out.d_n_g_cm3, 1e-6, 1e-20)) {
       return EXIT_FAILURE;
     }
   }

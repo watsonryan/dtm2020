@@ -67,9 +67,8 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  dtm2020::Error error;
-  auto model = dtm2020::Dtm2020Research::LoadFromFile(coeff_file, error);
-  if (!model || error.code != dtm2020::ErrorCode::kNone) {
+  auto model = dtm2020::Dtm2020Research::LoadFromFile(coeff_file);
+  if (!model) {
     return EXIT_FAILURE;
   }
 
@@ -83,12 +82,13 @@ int main() {
   in.f30m = 120.0;
   in.ap60 = {6.0, 5.0, 5.5, 5.8, 6.1, 5.2, 5.1, 5.0, 4.9, 4.8};
 
-  auto out = model->Evaluate(in, error);
-  if (error.code != dtm2020::ErrorCode::kNone) {
+  auto out = model.value().Evaluate(in);
+  if (!out) {
     return EXIT_FAILURE;
   }
 
-  if (!std::isfinite(out.temperature_k) || !std::isfinite(out.density_g_cm3) || out.density_g_cm3 <= 0.0) {
+  if (!std::isfinite(out.value().temperature_k) || !std::isfinite(out.value().density_g_cm3) ||
+      out.value().density_g_cm3 <= 0.0) {
     return EXIT_FAILURE;
   }
 

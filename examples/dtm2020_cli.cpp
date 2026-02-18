@@ -13,10 +13,9 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  dtm2020::Error error;
-  auto model = dtm2020::Dtm2020Operational::LoadFromFile(argv[1], error);
+  auto model = dtm2020::Dtm2020Operational::LoadFromFile(argv[1]);
   if (!model) {
-    std::cerr << "load error: " << error.message << "\n";
+    std::cerr << "load error: " << model.error().message << "\n";
     return EXIT_FAILURE;
   }
 
@@ -31,16 +30,16 @@ int main(int argc, char** argv) {
   in.kp_delayed_3h = std::atof(argv[9]);
   in.kp_mean_24h = std::atof(argv[10]);
 
-  auto out = model->Evaluate(in, error);
-  if (error.code != dtm2020::ErrorCode::kNone) {
-    std::cerr << "evaluate error: " << error.message << "\n";
+  auto out = model.value().Evaluate(in);
+  if (!out) {
+    std::cerr << "evaluate error: " << out.error().message << "\n";
     return EXIT_FAILURE;
   }
 
   std::cout << std::setprecision(10)
-            << "temperature_k=" << out.temperature_k << "\n"
-            << "exospheric_temp_k=" << out.exospheric_temp_k << "\n"
-            << "density_g_cm3=" << out.density_g_cm3 << "\n"
-            << "mean_mol_mass_g=" << out.mean_mol_mass_g << "\n";
+            << "temperature_k=" << out.value().temperature_k << "\n"
+            << "exospheric_temp_k=" << out.value().exospheric_temp_k << "\n"
+            << "density_g_cm3=" << out.value().density_g_cm3 << "\n"
+            << "mean_mol_mass_g=" << out.value().mean_mol_mass_g << "\n";
   return EXIT_SUCCESS;
 }

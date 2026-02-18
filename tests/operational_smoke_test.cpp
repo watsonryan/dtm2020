@@ -80,9 +80,8 @@ int main() {
     return EXIT_FAILURE;
   }
 
-  dtm2020::Error error;
-  auto model = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, error);
-  if (!model || error.code != dtm2020::ErrorCode::kNone) {
+  auto model = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file);
+  if (!model) {
     return EXIT_FAILURE;
   }
 
@@ -98,16 +97,17 @@ int main() {
       .kp_mean_24h = 2.0,
   };
 
-  auto out1 = model->Evaluate(base, error);
-  if (error.code != dtm2020::ErrorCode::kNone) {
+  auto out1 = model.value().Evaluate(base);
+  if (!out1) {
     return EXIT_FAILURE;
   }
 
-  if (!(std::isfinite(out1.temperature_k) && std::isfinite(out1.density_g_cm3) && out1.density_g_cm3 > 0.0)) {
+  if (!(std::isfinite(out1.value().temperature_k) && std::isfinite(out1.value().density_g_cm3) &&
+        out1.value().density_g_cm3 > 0.0)) {
     return EXIT_FAILURE;
   }
 
-  auto out2 = model->Evaluate(
+  auto out2 = model.value().Evaluate(
       dtm2020::OperationalInputs{.altitude_km = base.altitude_km,
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg + 360.0,
@@ -116,19 +116,18 @@ int main() {
                                  .f107 = base.f107,
                                  .f107m = base.f107m,
                                  .kp_delayed_3h = base.kp_delayed_3h,
-                                 .kp_mean_24h = base.kp_mean_24h},
-      error);
+                                 .kp_mean_24h = base.kp_mean_24h});
 
-  if (error.code != dtm2020::ErrorCode::kNone) {
+  if (!out2) {
     return EXIT_FAILURE;
   }
 
-  if (!AlmostEqual(out1.temperature_k, out2.temperature_k, 1e-5) ||
-      !AlmostEqual(out1.density_g_cm3, out2.density_g_cm3, 1e-18)) {
+  if (!AlmostEqual(out1.value().temperature_k, out2.value().temperature_k, 1e-5) ||
+      !AlmostEqual(out1.value().density_g_cm3, out2.value().density_g_cm3, 1e-18)) {
     return EXIT_FAILURE;
   }
 
-  auto bad = model->Evaluate(
+  auto bad = model.value().Evaluate(
       dtm2020::OperationalInputs{.altitude_km = 120.0,
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg,
@@ -137,14 +136,13 @@ int main() {
                                  .f107 = base.f107,
                                  .f107m = base.f107m,
                                  .kp_delayed_3h = base.kp_delayed_3h,
-                                 .kp_mean_24h = base.kp_mean_24h},
-      error);
+                                 .kp_mean_24h = base.kp_mean_24h});
   (void)bad;
-  if (error.code != dtm2020::ErrorCode::kInvalidInput) {
+  if (bad || bad.error().code != dtm2020::ErrorCode::kInvalidInput) {
     return EXIT_FAILURE;
   }
 
-  bad = model->Evaluate(
+  bad = model.value().Evaluate(
       dtm2020::OperationalInputs{.altitude_km = base.altitude_km,
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg,
@@ -153,14 +151,13 @@ int main() {
                                  .f107 = base.f107,
                                  .f107m = base.f107m,
                                  .kp_delayed_3h = base.kp_delayed_3h,
-                                 .kp_mean_24h = base.kp_mean_24h},
-      error);
+                                 .kp_mean_24h = base.kp_mean_24h});
   (void)bad;
-  if (error.code != dtm2020::ErrorCode::kInvalidInput) {
+  if (bad || bad.error().code != dtm2020::ErrorCode::kInvalidInput) {
     return EXIT_FAILURE;
   }
 
-  bad = model->Evaluate(
+  bad = model.value().Evaluate(
       dtm2020::OperationalInputs{.altitude_km = std::numeric_limits<double>::quiet_NaN(),
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg,
@@ -169,30 +166,29 @@ int main() {
                                  .f107 = base.f107,
                                  .f107m = base.f107m,
                                  .kp_delayed_3h = base.kp_delayed_3h,
-                                 .kp_mean_24h = base.kp_mean_24h},
-      error);
+                                 .kp_mean_24h = base.kp_mean_24h});
   (void)bad;
-  if (error.code != dtm2020::ErrorCode::kInvalidInput) {
+  if (bad || bad.error().code != dtm2020::ErrorCode::kInvalidInput) {
     return EXIT_FAILURE;
   }
 
-  const float sigma = model->DensityUncertaintyPercent(base);
+  const float sigma = model.value().DensityUncertaintyPercent(base);
   if (!(std::isfinite(sigma) && sigma > 0.0F)) {
     return EXIT_FAILURE;
   }
 
   const dtm2020::Dtm2020Operational::Options mcm_on{.emulate_mcm_transition = true};
   const dtm2020::Dtm2020Operational::Options mcm_off{.emulate_mcm_transition = false};
-  auto model_mcm_on = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, error, mcm_on);
-  if (!model_mcm_on || error.code != dtm2020::ErrorCode::kNone) {
+  auto model_mcm_on = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, mcm_on);
+  if (!model_mcm_on) {
     return EXIT_FAILURE;
   }
-  auto model_mcm_off = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, error, mcm_off);
-  if (!model_mcm_off || error.code != dtm2020::ErrorCode::kNone) {
+  auto model_mcm_off = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, mcm_off);
+  if (!model_mcm_off) {
     return EXIT_FAILURE;
   }
 
-  auto out_mcm_on = model_mcm_on->Evaluate(
+  auto out_mcm_on = model_mcm_on.value().Evaluate(
       dtm2020::OperationalInputs{.altitude_km = 130.0,
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg,
@@ -201,12 +197,11 @@ int main() {
                                  .f107 = base.f107,
                                  .f107m = base.f107m,
                                  .kp_delayed_3h = base.kp_delayed_3h,
-                                 .kp_mean_24h = base.kp_mean_24h},
-      error);
-  if (error.code != dtm2020::ErrorCode::kNone) {
+                                 .kp_mean_24h = base.kp_mean_24h});
+  if (!out_mcm_on) {
     return EXIT_FAILURE;
   }
-  auto out_mcm_off = model_mcm_off->Evaluate(
+  auto out_mcm_off = model_mcm_off.value().Evaluate(
       dtm2020::OperationalInputs{.altitude_km = 130.0,
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg,
@@ -215,13 +210,12 @@ int main() {
                                  .f107 = base.f107,
                                  .f107m = base.f107m,
                                  .kp_delayed_3h = base.kp_delayed_3h,
-                                 .kp_mean_24h = base.kp_mean_24h},
-      error);
-  if (error.code != dtm2020::ErrorCode::kNone) {
+                                 .kp_mean_24h = base.kp_mean_24h});
+  if (!out_mcm_off) {
     return EXIT_FAILURE;
   }
 
-  if (AlmostEqual(out_mcm_on.density_g_cm3, out_mcm_off.density_g_cm3, 1e-22)) {
+  if (AlmostEqual(out_mcm_on.value().density_g_cm3, out_mcm_off.value().density_g_cm3, 1e-22)) {
     return EXIT_FAILURE;
   }
 
