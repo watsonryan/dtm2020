@@ -11,6 +11,9 @@
 
 namespace dtm2020 {
 
+/**
+ * @brief Error categories returned by model loading and evaluation.
+ */
 enum class ErrorCode {
   kNone,
   kFileOpenFailed,
@@ -18,11 +21,17 @@ enum class ErrorCode {
   kInvalidInput,
 };
 
+/**
+ * @brief Error payload with machine-readable code and human-readable message.
+ */
 struct Error {
   ErrorCode code{ErrorCode::kNone};
   std::string message{};
 };
 
+/**
+ * @brief Inputs for the operational DTM2020 model (F10.7/Kp forcing).
+ */
 struct OperationalInputs {
   double altitude_km{};
   double latitude_deg{};
@@ -35,6 +44,9 @@ struct OperationalInputs {
   double kp_mean_24h{};
 };
 
+/**
+ * @brief Thermospheric outputs returned by DTM2020.
+ */
 struct Outputs {
   double temperature_k{};
   double exospheric_temp_k{};
@@ -48,20 +60,48 @@ struct Outputs {
   double d_n_g_cm3{};
 };
 
+/**
+ * @brief Operational DTM2020 evaluator backed by a parsed coefficient table.
+ */
 class Dtm2020Operational {
  public:
+  /**
+   * @brief Loader options that control behavioral compatibility.
+   */
   struct Options {
     bool emulate_mcm_transition{true};
   };
 
+  /**
+   * @brief Load operational coefficients from a file.
+   * @param coeff_file Path to the DTM2020 operational coefficient file.
+   * @return Loaded model on success, or an Error on failure.
+   */
   [[nodiscard]] static Result<Dtm2020Operational, Error> LoadFromFile(
       const std::filesystem::path& coeff_file);
 
+  /**
+   * @brief Load operational coefficients from a file with explicit options.
+   * @param coeff_file Path to the DTM2020 operational coefficient file.
+   * @param options Loader/runtime compatibility options.
+   * @return Loaded model on success, or an Error on failure.
+   */
   [[nodiscard]] static Result<Dtm2020Operational, Error> LoadFromFile(
       const std::filesystem::path& coeff_file,
       Options options);
 
+  /**
+   * @brief Evaluate the model for one geophysical state vector.
+   * @param in Operational model inputs.
+   * @return Outputs on success, or an Error when inputs are invalid or evaluation fails.
+   */
   [[nodiscard]] Result<Outputs, Error> Evaluate(const OperationalInputs& in) const;
+
+  /**
+   * @brief Estimate 1-sigma density uncertainty in percent for the given inputs.
+   * @param in Operational model inputs.
+   * @return Estimated uncertainty percentage.
+   */
   float DensityUncertaintyPercent(const OperationalInputs& in) const;
 
   struct Coefficients {

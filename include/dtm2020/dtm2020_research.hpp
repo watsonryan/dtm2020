@@ -10,6 +10,9 @@
 
 namespace dtm2020 {
 
+/**
+ * @brief Inputs for the research DTM2020 model (F30/ap60 forcing).
+ */
 struct ResearchInputs {
   double altitude_km{};
   double latitude_deg{};
@@ -21,11 +24,24 @@ struct ResearchInputs {
   std::array<double, 10> ap60{};
 };
 
+/**
+ * @brief Research DTM2020 evaluator for the F30/Hp60 driver path.
+ */
 class Dtm2020Research {
  public:
+  /**
+   * @brief Load research coefficients from a file.
+   * @param coeff_file Path to the DTM2020 research coefficient file.
+   * @return Loaded model on success, or an Error on failure.
+   */
   [[nodiscard]] static Result<Dtm2020Research, Error> LoadFromFile(
       const std::filesystem::path& coeff_file);
 
+  /**
+   * @brief Evaluate the research model for one geophysical state vector.
+   * @param in Research model inputs.
+   * @return Outputs on success, or an Error when inputs are invalid or evaluation fails.
+   */
   [[nodiscard]] Result<Outputs, Error> Evaluate(const ResearchInputs& in) const;
 
   struct Coefficients {
