@@ -47,9 +47,13 @@ bool WriteSyntheticCoeffFile(const std::filesystem::path& file_path) {
       az2 = 2.0F;
     }
 
-    out << std::setw(4) << i << " "
-        << std::uppercase << std::scientific << std::setprecision(6)
-        << tt << " " << 0.0F << " "
+    out << std::setw(4) << i << " " << std::uppercase << std::scientific << std::setprecision(6);
+    if (i == 1) {
+      out << "1.000000D+03";
+    } else {
+      out << tt;
+    }
+    out << " " << 0.0F << " "
         << h << " " << 0.0F << " "
         << he << " " << 0.0F << " "
         << o << " " << 0.0F << " "
