@@ -45,7 +45,7 @@ ns_per_eval_p95=461.81
 - Median: `542.70 -> 446.99 ns/eval` (~17.6% faster)
 - Average: `541.89 -> 448.60 ns/eval` (~17.2% faster)
 
-## Research Baseline (2026-02-18)
+## Research Baseline (2026-02-18, before optimization)
 
 ```text
 research_perf benchmark
@@ -54,6 +54,21 @@ ns_per_eval_avg=635.38
 ns_per_eval_median=635.69
 ns_per_eval_p95=636.74
 ```
+
+## Research Post-Optimization Result (2026-02-18)
+
+```text
+research_perf benchmark
+samples=15 corpus_size=4096 iterations=80
+ns_per_eval_avg=610.07
+ns_per_eval_median=607.79
+ns_per_eval_p95=619.88
+```
+
+## Research Delta
+
+- Median: `635.69 -> 607.79 ns/eval` (~4.4% faster)
+- Average: `635.38 -> 610.07 ns/eval` (~4.0% faster)
 
 ## Notes
 

@@ -131,16 +131,16 @@ float BintOpenEnded(float ap) {
   if (ap <= aap.front()) {
     return kp.front();
   }
-  for (std::size_t i = 0; i < aap.size(); ++i) {
-    if (aap[i] == ap) {
-      return kp[i];
-    }
-    if (aap[i] > ap && i > 0) {
-      const std::size_t i1 = i - 1;
-      return kp[i1] + ((kp[i] - kp[i1]) / (aap[i] - aap[i1])) * (ap - aap[i1]);
-    }
+  if (ap >= aap.back()) {
+    return kp.back();
   }
-  return kp.back();
+  const auto it = std::upper_bound(aap.begin(), aap.end(), ap);
+  const std::size_t i = static_cast<std::size_t>(std::distance(aap.begin(), it));
+  const std::size_t i1 = i - 1;
+  if (aap[i1] == ap) {
+    return kp[i1];
+  }
+  return kp[i1] + ((kp[i] - kp[i1]) / (aap[i] - aap[i1])) * (ap - aap[i1]);
 }
 
 void Geogm(float xlat_deg, float xlon_deg, float& gmlat_deg, float& gmlon_deg) {
