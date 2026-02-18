@@ -68,3 +68,11 @@ add_executable(dtm2020_operational_perf_benchmark
 target_link_libraries(dtm2020_operational_perf_benchmark PRIVATE dtm2020)
 dtm2020_apply_common_warnings(dtm2020_operational_perf_benchmark)
 dtm2020_apply_runtime_flags(dtm2020_operational_perf_benchmark)
+
+add_executable(dtm2020_research_perf_benchmark
+  research_perf_benchmark.cpp
+)
+
+target_link_libraries(dtm2020_research_perf_benchmark PRIVATE dtm2020)
+dtm2020_apply_common_warnings(dtm2020_research_perf_benchmark)
+dtm2020_apply_runtime_flags(dtm2020_research_perf_benchmark)

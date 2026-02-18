@@ -61,6 +61,12 @@ Run the operational throughput benchmark with profile flags:
 tools/profile_operational.sh
 ```
 
+Run the research throughput benchmark:
+
+```bash
+tools/profile_research.sh
+```
+
 Or manually:
 
 ```bash
@@ -186,6 +192,7 @@ if (!out) {
 - `dtm2020_research_benchmark`: regression against benchmark values
 - `dtm2020_sigma_smoke`: uncertainty function checks
 - `dtm2020_operational_perf_benchmark`: throughput benchmark executable (not a pass/fail CTest)
+- `dtm2020_research_perf_benchmark`: research throughput benchmark executable (not a pass/fail CTest)
 
 ## Additional docs
 
