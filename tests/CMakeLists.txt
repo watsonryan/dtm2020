@@ -28,6 +28,19 @@ dtm2020_apply_runtime_flags(dtm2020_operational_golden)
 
 add_test(NAME dtm2020_operational_golden COMMAND dtm2020_operational_golden)
 
+add_executable(dtm2020_operational_numerical_regression
+  operational_numerical_regression_test.cpp
+)
+
+target_link_libraries(dtm2020_operational_numerical_regression PRIVATE dtm2020)
+dtm2020_apply_common_warnings(dtm2020_operational_numerical_regression)
+dtm2020_apply_runtime_flags(dtm2020_operational_numerical_regression)
+target_compile_definitions(dtm2020_operational_numerical_regression
+  PRIVATE DTM2020_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+add_test(NAME dtm2020_operational_numerical_regression COMMAND dtm2020_operational_numerical_regression)
+
 add_executable(dtm2020_research_smoke
   research_smoke_test.cpp
 )
@@ -47,3 +60,11 @@ dtm2020_apply_common_warnings(dtm2020_research_benchmark)
 dtm2020_apply_runtime_flags(dtm2020_research_benchmark)
 
 add_test(NAME dtm2020_research_benchmark COMMAND dtm2020_research_benchmark)
+
+add_executable(dtm2020_operational_perf_benchmark
+  operational_perf_benchmark.cpp
+)
+
+target_link_libraries(dtm2020_operational_perf_benchmark PRIVATE dtm2020)
+dtm2020_apply_common_warnings(dtm2020_operational_perf_benchmark)
+dtm2020_apply_runtime_flags(dtm2020_operational_perf_benchmark)
