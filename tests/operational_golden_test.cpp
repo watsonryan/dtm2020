@@ -102,7 +102,13 @@ int main() {
     if (!NearlyEqualRelative(got.temperature_k, row.out.temperature_k, 1e-5, 1e-4) ||
         !NearlyEqualRelative(got.exospheric_temp_k, row.out.exospheric_temp_k, 1e-5, 1e-4) ||
         !NearlyEqualRelative(got.density_g_cm3, row.out.density_g_cm3, 1e-6, 1e-18) ||
-        !NearlyEqualRelative(got.mean_mol_mass_g, row.out.mean_mol_mass_g, 1e-6, 1e-9)) {
+        !NearlyEqualRelative(got.mean_mol_mass_g, row.out.mean_mol_mass_g, 1e-6, 1e-9) ||
+        !NearlyEqualRelative(got.d_h_g_cm3, row.out.d_h_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.d_he_g_cm3, row.out.d_he_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.d_o_g_cm3, row.out.d_o_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.d_n2_g_cm3, row.out.d_n2_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.d_o2_g_cm3, row.out.d_o2_g_cm3, 1e-6, 1e-20) ||
+        !NearlyEqualRelative(got.d_n_g_cm3, row.out.d_n_g_cm3, 1e-6, 1e-20)) {
       return EXIT_FAILURE;
     }
   }
