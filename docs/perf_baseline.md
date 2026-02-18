@@ -17,7 +17,7 @@ cmake --build --preset macos-profile -j
 ./build/macos-profile/tests/dtm2020_operational_perf_benchmark
 ```
 
-## Baseline Result (2026-02-18)
+## Baseline Result (2026-02-18, before optimization)
 
 ```text
 operational_perf benchmark
@@ -27,7 +27,24 @@ ns_per_eval_median=542.70
 ns_per_eval_p95=544.39
 ```
 
+## Post-Optimization Result (2026-02-18)
+
+```text
+operational_perf benchmark
+samples=15 corpus_size=4096 iterations=80
+ns_per_eval_avg=448.60
+ns_per_eval_median=446.99
+ns_per_eval_p95=461.81
+```
+
+## Delta
+
+- Median: `542.70 -> 446.99 ns/eval` (~17.6% faster)
+- Average: `541.89 -> 448.60 ns/eval` (~17.2% faster)
+
 ## Notes
 
 - These numbers are machine/toolchain specific and should be treated as a local reference.
 - Compare future optimization runs against median and p95 from the same command/preset.
+- On this machine, attaching `sample` to the benchmark required elevated permissions, so profiling
+  was done with repeatable throughput measurements rather than stack sampling.

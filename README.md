@@ -53,6 +53,26 @@ See `CMakePresets.json` for:
 - profile builds
 - macOS/Linux/Windows preset families
 
+## Performance workflow
+
+Run the operational throughput benchmark with profile flags:
+
+```bash
+tools/profile_operational.sh
+```
+
+Or manually:
+
+```bash
+cmake --preset macos-profile
+cmake --build --preset macos-profile -j
+./build/macos-profile/tests/dtm2020_operational_perf_benchmark
+```
+
+Environment overrides for longer/shorter runs:
+- `DTM2020_PERF_SAMPLES` (default `15`)
+- `DTM2020_PERF_ITERATIONS` (default `80`)
+
 ## Full local validation
 
 Run:
@@ -161,9 +181,11 @@ if (!out) {
 
 - `dtm2020_operational_smoke`: parser/evaluation sanity checks
 - `dtm2020_operational_golden`: parity against operational vectors
+- `dtm2020_operational_numerical_regression`: frozen internal numerical guardrail vectors
 - `dtm2020_research_smoke`: research path sanity checks
 - `dtm2020_research_benchmark`: regression against benchmark values
 - `dtm2020_sigma_smoke`: uncertainty function checks
+- `dtm2020_operational_perf_benchmark`: throughput benchmark executable (not a pass/fail CTest)
 
 ## Additional docs
 
