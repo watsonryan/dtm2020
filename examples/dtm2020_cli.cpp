@@ -2,10 +2,22 @@
 // Purpose: Minimal CLI for single-point DTM2020 operational evaluation.
 
 #include <cstdlib>
+#include <cerrno>
 #include <iomanip>
 #include <iostream>
 
 #include "dtm2020/dtm2020_operational.hpp"
+
+namespace {
+
+bool ParseDoubleArg(const char* text, double& out) {
+  errno = 0;
+  char* end = nullptr;
+  out = std::strtod(text, &end);
+  return errno == 0 && end != text && end != nullptr && *end == '\0';
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
   if (argc != 11) {
@@ -20,15 +32,14 @@ int main(int argc, char** argv) {
   }
 
   dtm2020::OperationalInputs in{};
-  in.altitude_km = std::atof(argv[2]);
-  in.latitude_deg = std::atof(argv[3]);
-  in.longitude_deg = std::atof(argv[4]);
-  in.local_time_h = std::atof(argv[5]);
-  in.day_of_year = std::atof(argv[6]);
-  in.f107 = std::atof(argv[7]);
-  in.f107m = std::atof(argv[8]);
-  in.kp_delayed_3h = std::atof(argv[9]);
-  in.kp_mean_24h = std::atof(argv[10]);
+  if (!ParseDoubleArg(argv[2], in.altitude_km) || !ParseDoubleArg(argv[3], in.latitude_deg) ||
+      !ParseDoubleArg(argv[4], in.longitude_deg) || !ParseDoubleArg(argv[5], in.local_time_h) ||
+      !ParseDoubleArg(argv[6], in.day_of_year) || !ParseDoubleArg(argv[7], in.f107) ||
+      !ParseDoubleArg(argv[8], in.f107m) || !ParseDoubleArg(argv[9], in.kp_delayed_3h) ||
+      !ParseDoubleArg(argv[10], in.kp_mean_24h)) {
+    std::cerr << "parse error: all numeric arguments must be valid floating-point values\n";
+    return EXIT_FAILURE;
+  }
 
   auto out = model.value().Evaluate(in);
   if (!out) {
