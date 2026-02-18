@@ -233,6 +233,7 @@ if (!out) {
 - `dtm2020_research_smoke`: research path sanity checks
 - `dtm2020_research_benchmark`: regression against benchmark values
 - `dtm2020_sigma_smoke`: uncertainty function checks
+- `dtm2020_thread_safety_smoke`: concurrent evaluation safety on shared model instances
 - `dtm2020_operational_perf_benchmark`: throughput benchmark executable (not a pass/fail CTest)
 - `dtm2020_research_perf_benchmark`: research throughput benchmark executable (not a pass/fail CTest)
 
@@ -241,4 +242,5 @@ if (!out) {
 - `docs/model_notes.md`
 - `docs/numerical_fidelity.md`
 - `docs/operational_vs_research.md`
+- `docs/thread_safety_and_performance.md`
 - `docs/licensing.md`

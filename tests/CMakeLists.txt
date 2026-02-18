@@ -1,3 +1,5 @@
+find_package(Threads REQUIRED)
+
 add_executable(dtm2020_sigma_smoke
   sigma_smoke_test.cpp
 )
@@ -86,3 +88,13 @@ add_executable(dtm2020_research_perf_benchmark
 target_link_libraries(dtm2020_research_perf_benchmark PRIVATE dtm2020)
 dtm2020_apply_common_warnings(dtm2020_research_perf_benchmark)
 dtm2020_apply_runtime_flags(dtm2020_research_perf_benchmark)
+
+add_executable(dtm2020_thread_safety_smoke
+  thread_safety_smoke_test.cpp
+)
+
+target_link_libraries(dtm2020_thread_safety_smoke PRIVATE dtm2020 Threads::Threads)
+dtm2020_apply_common_warnings(dtm2020_thread_safety_smoke)
+dtm2020_apply_runtime_flags(dtm2020_thread_safety_smoke)
+
+add_test(NAME dtm2020_thread_safety_smoke COMMAND dtm2020_thread_safety_smoke)
