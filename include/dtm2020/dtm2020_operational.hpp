@@ -8,7 +8,6 @@
 #include <string>
 
 #include "dtm2020/result.hpp"
-#include "dtm2020/types.hpp"
 
 namespace dtm2020 {
 
