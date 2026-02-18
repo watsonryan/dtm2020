@@ -497,39 +497,37 @@ Result<Outputs, Error> Dtm2020Research::Evaluate(const ResearchInputs& in) const
   std::array<float, 3> fbar = {0.0F, static_cast<float>(in.f30m), 0.0F};
 
   std::array<float, 9> akp = {0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F};
+  std::array<float, 10> ap60f{};
+  for (std::size_t i = 0; i < ap60f.size(); ++i) {
+    ap60f[i] = static_cast<float>(in.ap60[i]);
+  }
+  std::array<float, 10> kp60{};
+  for (std::size_t i = 0; i < kp60.size(); ++i) {
+    kp60[i] = BintOpenEnded(ap60f[i]);
+  }
 
   const int latabs = static_cast<int>(std::abs(dlat_deg));
   if (latabs >= 70 && latabs <= 90) {
     const float xl75 = (90.0F - static_cast<float>(latabs)) / 20.0F;
     akp[1] = BintOpenEnded((1.0F - xl75) *
-                               ((static_cast<float>(in.ap60[2]) + static_cast<float>(in.ap60[1]) +
-                                 static_cast<float>(in.ap60[3])) /
-                                3.0F) +
-                           xl75 * ((static_cast<float>(in.ap60[2]) + static_cast<float>(in.ap60[3]) +
-                                    static_cast<float>(in.ap60[4])) /
-                                   3.0F));
+                               ((ap60f[2] + ap60f[1] + ap60f[3]) / 3.0F) +
+                           xl75 * ((ap60f[2] + ap60f[3] + ap60f[4]) / 3.0F));
   } else if (latabs >= 30 && latabs <= 69) {
     const float xl45 = (69.0F - static_cast<float>(latabs)) / 40.0F;
     akp[1] = BintOpenEnded((1.0F - xl45) *
-                               ((static_cast<float>(in.ap60[2]) + static_cast<float>(in.ap60[3]) +
-                                 static_cast<float>(in.ap60[4])) /
-                                3.0F) +
-                           xl45 * ((static_cast<float>(in.ap60[4]) + static_cast<float>(in.ap60[3]) +
-                                    static_cast<float>(in.ap60[0])) /
-                                   3.0F));
+                               ((ap60f[2] + ap60f[3] + ap60f[4]) / 3.0F) +
+                           xl45 * ((ap60f[4] + ap60f[3] + ap60f[0]) / 3.0F));
   } else {
-    akp[1] = BintOpenEnded((static_cast<float>(in.ap60[3]) + static_cast<float>(in.ap60[4]) +
-                            static_cast<float>(in.ap60[0])) /
-                           3.0F);
+    akp[1] = BintOpenEnded((ap60f[3] + ap60f[4] + ap60f[0]) / 3.0F);
   }
 
-  akp[2] = BintOpenEnded(static_cast<float>(in.ap60[1])) - BintOpenEnded(static_cast<float>(in.ap60[2]));
-  akp[3] = BintOpenEnded(static_cast<float>(in.ap60[5]));
+  akp[2] = kp60[1] - kp60[2];
+  akp[3] = kp60[5];
   akp[4] = 0.0F;
-  akp[5] = BintOpenEnded(static_cast<float>(in.ap60[6]));
-  akp[6] = BintOpenEnded(static_cast<float>(in.ap60[7]));
-  akp[7] = BintOpenEnded(static_cast<float>(in.ap60[8]));
-  akp[8] = BintOpenEnded(static_cast<float>(in.ap60[9]));
+  akp[5] = kp60[6];
+  akp[6] = kp60[7];
+  akp[7] = kp60[8];
+  akp[8] = kp60[9];
 
   constexpr std::array<float, 6> alefa = {-0.40F, -0.38F, 0.0F, 0.0F, 0.0F, 0.0F};
   constexpr std::array<int, 6> ma = {1, 4, 16, 28, 32, 14};
