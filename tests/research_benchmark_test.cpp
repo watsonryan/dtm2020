@@ -17,13 +17,23 @@ bool NearlyEqualRelative(double a, double b, double rel_tol, double abs_floor) {
   return diff <= std::max(abs_floor, rel_tol * scale);
 }
 
+std::filesystem::path ResolveResearchCoeffPath() {
+  if (const char* direct = std::getenv("DTM2020_RESEARCH_COEFF_FILE"); direct != nullptr && *direct != '\0') {
+    return std::filesystem::path(direct);
+  }
+  if (const char* root = std::getenv("DTM2020_DATA_ROOT"); root != nullptr && *root != '\0') {
+    return std::filesystem::path(root) / "DTM_2020_F30_ap60.dat";
+  }
+  return {};
+}
+
 }  // namespace
 
 int main() {
 #ifdef DTM2020_ENABLE_RESEARCH
   const auto log = dtm2020::MakeStderrLogSink();
-  const auto coeff_file = std::filesystem::path("/Users/rmw/Documents/code/mcm/data/DTM_2020_F30_ap60.dat");
-  if (!std::filesystem::exists(coeff_file)) {
+  const auto coeff_file = ResolveResearchCoeffPath();
+  if (coeff_file.empty() || !std::filesystem::exists(coeff_file)) {
     return EXIT_SUCCESS;
   }
 

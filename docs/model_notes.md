@@ -6,9 +6,9 @@ Author: Watson
 
 Canonical operational source for this port:
 
-- `/Users/rmw/Documents/code/mcm/src/libswamif/dtm2020_F107_Kp-subr_MCM.f90`
-- `/Users/rmw/Documents/code/mcm/src/libswamif/dtm2020_sigma_function.f90`
-- `/Users/rmw/Documents/code/mcm/src/libswamif/m_dtm.f90`
+- `${MCM_ROOT}/src/libswamif/dtm2020_F107_Kp-subr_MCM.f90`
+- `${MCM_ROOT}/src/libswamif/dtm2020_sigma_function.f90`
+- `${MCM_ROOT}/src/libswamif/m_dtm.f90`
 
 Implemented in this repo:
 
@@ -28,7 +28,7 @@ Implemented in this repo:
 
 ## Research Model Caution
 
-In `/Users/rmw/Documents/code/mcm/src/dtm2020/dtm2020_F30_Hp-subr.f90`, `ap60` is declared with dimension 7 but indexed up to 10. This must be resolved before a faithful `dtm5` port.
+In `${MCM_ROOT}/src/dtm2020/dtm2020_F30_Hp-subr.f90`, `ap60` is declared with dimension 7 but indexed up to 10. This must be resolved before a faithful `dtm5` port.
 
 ## Research Port Status
 

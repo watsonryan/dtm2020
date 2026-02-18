@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_operational.hpp"
 
 namespace {
@@ -72,29 +73,43 @@ bool ParseCsv(const std::filesystem::path& path, std::vector<Row>& rows) {
   return true;
 }
 
+std::filesystem::path ResolveOperationalCoeffPath() {
+  if (const char* direct = std::getenv("DTM2020_OPERATIONAL_COEFF_FILE"); direct != nullptr && *direct != '\0') {
+    return std::filesystem::path(direct);
+  }
+  if (const char* root = std::getenv("DTM2020_DATA_ROOT"); root != nullptr && *root != '\0') {
+    return std::filesystem::path(root) / "DTM_2020_F107_Kp.dat";
+  }
+  return {};
+}
+
 }  // namespace
 
 int main() {
-  const auto coeff_file = std::filesystem::path("/Users/rmw/Documents/code/mcm/data/DTM_2020_F107_Kp.dat");
-  const auto csv_file = std::filesystem::path("testdata/operational_vectors.csv");
+  const auto log = dtm2020::MakeStderrLogSink();
+  const auto coeff_file = ResolveOperationalCoeffPath();
+  const auto csv_file = std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/operational_vectors.csv";
 
-  if (!std::filesystem::exists(coeff_file) || !std::filesystem::exists(csv_file)) {
+  if (coeff_file.empty() || !std::filesystem::exists(coeff_file) || !std::filesystem::exists(csv_file)) {
     return EXIT_SUCCESS;
   }
 
   auto model = dtm2020::Dtm2020Operational::LoadFromFile(coeff_file);
   if (!model) {
+    dtm2020::LogError(log, "load failed", model.error());
     return EXIT_FAILURE;
   }
 
   std::vector<Row> rows;
   if (!ParseCsv(csv_file, rows)) {
+    dtm2020::Log(log, dtm2020::LogLevel::kError, "failed to parse operational vector CSV");
     return EXIT_FAILURE;
   }
 
   for (const auto& row : rows) {
     const auto got = model.value().Evaluate(row.in);
     if (!got) {
+      dtm2020::LogError(log, "evaluate failed", got.error());
       return EXIT_FAILURE;
     }
 

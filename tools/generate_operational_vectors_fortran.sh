@@ -5,11 +5,17 @@ set -euo pipefail
 # Purpose: Generate operational golden vectors from the MCM Fortran reference implementation.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MCM_ROOT="${MCM_ROOT:-/Users/rmw/Documents/code/mcm}"
+MCM_ROOT="${MCM_ROOT:-}"
 OUT_CSV="${ROOT}/testdata/operational_vectors.csv"
 TMP_F90="$(mktemp /tmp/dtm2020_vecgen.XXXXXX.f90)"
 TMP_EXE="$(mktemp /tmp/dtm2020_vecgen.XXXXXX.exe)"
 trap 'rm -f "$TMP_F90" "$TMP_EXE"' EXIT
+
+if [[ -z "${MCM_ROOT}" ]]; then
+  echo "error: set MCM_ROOT to your local mcm checkout root"
+  echo "example: MCM_ROOT=/path/to/mcm tools/generate_operational_vectors_fortran.sh"
+  exit 1
+fi
 
 cat > "$TMP_F90" <<'F90'
 program vecgen

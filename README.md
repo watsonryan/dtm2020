@@ -97,11 +97,12 @@ This performs:
 
 The model loaders expect DTM2020 coefficient files from your external data source.
 
-Typical local paths used by tests in this workspace:
-- operational: `/Users/rmw/Documents/code/mcm/data/DTM_2020_F107_Kp.dat`
-- research: `/Users/rmw/Documents/code/mcm/data/DTM_2020_F30_ap60.dat`
+Set coefficient paths for optional external-data regression tests via environment:
+- `DTM2020_OPERATIONAL_COEFF_FILE=/path/to/DTM_2020_F107_Kp.dat`
+- `DTM2020_RESEARCH_COEFF_FILE=/path/to/DTM_2020_F30_ap60.dat`
+- or `DTM2020_DATA_ROOT=/path/to/data` (expects both files in that directory)
 
-If these files are missing, some regression tests exit successfully without running comparisons.
+If these are not set (or files are missing), external-data regression tests are skipped.
 
 ## CLI usage (operational)
 
@@ -116,7 +117,7 @@ Example:
 
 ```bash
 ./build/macos-debug/dtm2020_cli \
-  /Users/rmw/Documents/code/mcm/data/DTM_2020_F107_Kp.dat \
+  /path/to/DTM_2020_F107_Kp.dat \
   400 45 -75 12 100 120 115 3 2
 ```
 

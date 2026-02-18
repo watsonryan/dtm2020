@@ -25,6 +25,9 @@ add_executable(dtm2020_operational_golden
 target_link_libraries(dtm2020_operational_golden PRIVATE dtm2020)
 dtm2020_apply_common_warnings(dtm2020_operational_golden)
 dtm2020_apply_runtime_flags(dtm2020_operational_golden)
+target_compile_definitions(dtm2020_operational_golden
+  PRIVATE DTM2020_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
 
 add_test(NAME dtm2020_operational_golden COMMAND dtm2020_operational_golden)
 
@@ -58,6 +61,9 @@ add_executable(dtm2020_research_benchmark
 target_link_libraries(dtm2020_research_benchmark PRIVATE dtm2020)
 dtm2020_apply_common_warnings(dtm2020_research_benchmark)
 dtm2020_apply_runtime_flags(dtm2020_research_benchmark)
+target_compile_definitions(dtm2020_research_benchmark
+  PRIVATE DTM2020_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
 
 add_test(NAME dtm2020_research_benchmark COMMAND dtm2020_research_benchmark)
 
