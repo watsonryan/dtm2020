@@ -183,6 +183,23 @@ if (!out) {
 }
 ```
 
+## Error handling and logging
+
+- Library APIs return `Result<T, Error>` and do not write logs directly.
+- `Error` includes:
+  - `code`
+  - `message`
+  - `detail` (optional context)
+  - `location` (optional source tag)
+- Helper utilities:
+  - `FormatError(const Error&)`
+  - `ToString(ErrorCode)`
+  - `MakeError(...)`
+- App/test logging helpers are in `include/dtm2020/logging.hpp`:
+  - `LogSink`, `LogLevel`
+  - `MakeStderrLogSink()`
+  - `Log(...)`, `LogError(...)`
+
 ## Testing strategy
 
 - `dtm2020_operational_smoke`: parser/evaluation sanity checks
