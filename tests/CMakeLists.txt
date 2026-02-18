@@ -29,3 +29,11 @@ add_executable(dtm2020_research_smoke
 target_link_libraries(dtm2020_research_smoke PRIVATE dtm2020)
 
 add_test(NAME dtm2020_research_smoke COMMAND dtm2020_research_smoke)
+
+add_executable(dtm2020_research_benchmark
+  research_benchmark_test.cpp
+)
+
+target_link_libraries(dtm2020_research_benchmark PRIVATE dtm2020)
+
+add_test(NAME dtm2020_research_benchmark COMMAND dtm2020_research_benchmark)
