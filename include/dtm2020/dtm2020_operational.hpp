@@ -65,7 +65,6 @@ class Dtm2020Operational {
   Outputs Evaluate(const OperationalInputs& in, Error& error) const;
   float DensityUncertaintyPercent(const OperationalInputs& in) const;
 
- private:
   struct Coefficients {
     static constexpr int kNlatm = 96;
     std::array<float, kNlatm> tt{};
@@ -79,6 +78,7 @@ class Dtm2020Operational {
     std::array<float, kNlatm> tp{};
   };
 
+ private:
   explicit Dtm2020Operational(Coefficients coeffs, Options options)
       : coeffs_(coeffs), options_(options) {}
 
