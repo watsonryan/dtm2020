@@ -5,8 +5,10 @@
 
 #include <array>
 #include <filesystem>
-#include <optional>
 #include <string>
+
+#include "dtm2020/result.hpp"
+#include "dtm2020/types.hpp"
 
 namespace dtm2020 {
 
@@ -53,16 +55,14 @@ class Dtm2020Operational {
     bool emulate_mcm_transition{true};
   };
 
-  static std::optional<Dtm2020Operational> LoadFromFile(
-      const std::filesystem::path& coeff_file,
-      Error& error);
+  [[nodiscard]] static Result<Dtm2020Operational, Error> LoadFromFile(
+      const std::filesystem::path& coeff_file);
 
-  static std::optional<Dtm2020Operational> LoadFromFile(
+  [[nodiscard]] static Result<Dtm2020Operational, Error> LoadFromFile(
       const std::filesystem::path& coeff_file,
-      Error& error,
       Options options);
 
-  Outputs Evaluate(const OperationalInputs& in, Error& error) const;
+  [[nodiscard]] Result<Outputs, Error> Evaluate(const OperationalInputs& in) const;
   float DensityUncertaintyPercent(const OperationalInputs& in) const;
 
   struct Coefficients {

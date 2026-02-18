@@ -287,22 +287,20 @@ void PopulateFromCoefficients(const Dtm2020Operational::Coefficients& c,
 
 }  // namespace
 
-std::optional<Dtm2020Operational> Dtm2020Operational::LoadFromFile(
-    const std::filesystem::path& coeff_file,
-    Error& error) {
-  return LoadFromFile(coeff_file, error, Options{});
+Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
+    const std::filesystem::path& coeff_file) {
+  return LoadFromFile(coeff_file, Options{});
 }
 
-std::optional<Dtm2020Operational> Dtm2020Operational::LoadFromFile(
+Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
     const std::filesystem::path& coeff_file,
-    Error& error,
     Options options) {
   Coefficients coeffs;
 
   std::ifstream in(coeff_file);
   if (!in.is_open()) {
-    error = {ErrorCode::kFileOpenFailed, "Failed to open coefficient file"};
-    return std::nullopt;
+    return Result<Dtm2020Operational, Error>::Err(
+        {ErrorCode::kFileOpenFailed, "Failed to open coefficient file"});
   }
 
   std::string title;
@@ -311,15 +309,15 @@ std::optional<Dtm2020Operational> Dtm2020Operational::LoadFromFile(
   int npdtm = 0;
   in >> npdtm;
   if (!in || npdtm <= 0 || npdtm > kNlatm) {
-    error = {ErrorCode::kFileParseFailed, "Invalid npdtm in coefficient file"};
-    return std::nullopt;
+    return Result<Dtm2020Operational, Error>::Err(
+        {ErrorCode::kFileParseFailed, "Invalid npdtm in coefficient file"});
   }
 
   for (int i = 0; i < npdtm; ++i) {
     int ni = 0;
     if (!(in >> ni)) {
-      error = {ErrorCode::kFileParseFailed, "Failed while parsing coefficient index"};
-      return std::nullopt;
+      return Result<Dtm2020Operational, Error>::Err(
+          {ErrorCode::kFileParseFailed, "Failed while parsing coefficient index"});
     }
 
     float dtt = 0.0F;
@@ -341,34 +339,29 @@ std::optional<Dtm2020Operational> Dtm2020Operational::LoadFromFile(
         !ParseRealToken(in, coeffs.az[i]) || !ParseRealToken(in, daz) ||
         !ParseRealToken(in, coeffs.t0[i]) || !ParseRealToken(in, dt0) ||
         !ParseRealToken(in, coeffs.tp[i]) || !ParseRealToken(in, dtp)) {
-      error = {ErrorCode::kFileParseFailed, "Failed while parsing coefficient row"};
-      return std::nullopt;
+      return Result<Dtm2020Operational, Error>::Err(
+          {ErrorCode::kFileParseFailed, "Failed while parsing coefficient row"});
     }
   }
 
-  error = {};
-  return Dtm2020Operational(coeffs, options);
+  return Result<Dtm2020Operational, Error>::Ok(Dtm2020Operational(coeffs, options));
 }
 
-Outputs Dtm2020Operational::Evaluate(const OperationalInputs& in, Error& error) const {
+Result<Outputs, Error> Dtm2020Operational::Evaluate(const OperationalInputs& in) const {
   if (!std::isfinite(in.altitude_km) || !std::isfinite(in.latitude_deg) ||
       !std::isfinite(in.longitude_deg) || !std::isfinite(in.local_time_h) ||
       !std::isfinite(in.day_of_year) || !std::isfinite(in.f107) || !std::isfinite(in.f107m) ||
       !std::isfinite(in.kp_delayed_3h) || !std::isfinite(in.kp_mean_24h)) {
-    error = {ErrorCode::kInvalidInput, "all inputs must be finite"};
-    return {};
+    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "all inputs must be finite"});
   }
   if (in.altitude_km <= 120.0) {
-    error = {ErrorCode::kInvalidInput, "altitude_km must be > 120"};
-    return {};
+    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "altitude_km must be > 120"});
   }
   if (in.latitude_deg < -90.0 || in.latitude_deg > 90.0) {
-    error = {ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]"};
-    return {};
+    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]"});
   }
   if (in.day_of_year < 1.0 || in.day_of_year > 366.0) {
-    error = {ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]"};
-    return {};
+    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]"});
   }
 
   const float alti = static_cast<float>(in.altitude_km);
@@ -525,12 +518,10 @@ Outputs Dtm2020Operational::Evaluate(const OperationalInputs& in, Error& error) 
   out.d_n_g_cm3 = static_cast<double>(d[5]);
 
   if (!std::isfinite(out.temperature_k) || !std::isfinite(out.density_g_cm3)) {
-    error = {ErrorCode::kInvalidInput, "non-finite result generated"};
-    return {};
+    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "non-finite result generated"});
   }
 
-  error = {};
-  return out;
+  return Result<Outputs, Error>::Ok(out);
 }
 
 float Dtm2020Operational::DensityUncertaintyPercent(const OperationalInputs& in) const {

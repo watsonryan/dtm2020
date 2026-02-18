@@ -5,7 +5,6 @@
 
 #include <array>
 #include <filesystem>
-#include <optional>
 
 #include "dtm2020/dtm2020_operational.hpp"
 
@@ -24,11 +23,10 @@ struct ResearchInputs {
 
 class Dtm2020Research {
  public:
-  static std::optional<Dtm2020Research> LoadFromFile(
-      const std::filesystem::path& coeff_file,
-      Error& error);
+  [[nodiscard]] static Result<Dtm2020Research, Error> LoadFromFile(
+      const std::filesystem::path& coeff_file);
 
-  Outputs Evaluate(const ResearchInputs& in, Error& error) const;
+  [[nodiscard]] Result<Outputs, Error> Evaluate(const ResearchInputs& in) const;
 
   struct Coefficients {
     static constexpr int kNlatm = 96;
