@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 
 #include "dtm2020/dtm2020_operational.hpp"
@@ -129,6 +130,38 @@ int main() {
 
   auto bad = model->Evaluate(
       dtm2020::OperationalInputs{.altitude_km = 120.0,
+                                 .latitude_deg = base.latitude_deg,
+                                 .longitude_deg = base.longitude_deg,
+                                 .local_time_h = base.local_time_h,
+                                 .day_of_year = base.day_of_year,
+                                 .f107 = base.f107,
+                                 .f107m = base.f107m,
+                                 .kp_delayed_3h = base.kp_delayed_3h,
+                                 .kp_mean_24h = base.kp_mean_24h},
+      error);
+  (void)bad;
+  if (error.code != dtm2020::ErrorCode::kInvalidInput) {
+    return EXIT_FAILURE;
+  }
+
+  bad = model->Evaluate(
+      dtm2020::OperationalInputs{.altitude_km = base.altitude_km,
+                                 .latitude_deg = base.latitude_deg,
+                                 .longitude_deg = base.longitude_deg,
+                                 .local_time_h = base.local_time_h,
+                                 .day_of_year = 367.0,
+                                 .f107 = base.f107,
+                                 .f107m = base.f107m,
+                                 .kp_delayed_3h = base.kp_delayed_3h,
+                                 .kp_mean_24h = base.kp_mean_24h},
+      error);
+  (void)bad;
+  if (error.code != dtm2020::ErrorCode::kInvalidInput) {
+    return EXIT_FAILURE;
+  }
+
+  bad = model->Evaluate(
+      dtm2020::OperationalInputs{.altitude_km = std::numeric_limits<double>::quiet_NaN(),
                                  .latitude_deg = base.latitude_deg,
                                  .longitude_deg = base.longitude_deg,
                                  .local_time_h = base.local_time_h,

@@ -351,12 +351,23 @@ std::optional<Dtm2020Operational> Dtm2020Operational::LoadFromFile(
 }
 
 Outputs Dtm2020Operational::Evaluate(const OperationalInputs& in, Error& error) const {
+  if (!std::isfinite(in.altitude_km) || !std::isfinite(in.latitude_deg) ||
+      !std::isfinite(in.longitude_deg) || !std::isfinite(in.local_time_h) ||
+      !std::isfinite(in.day_of_year) || !std::isfinite(in.f107) || !std::isfinite(in.f107m) ||
+      !std::isfinite(in.kp_delayed_3h) || !std::isfinite(in.kp_mean_24h)) {
+    error = {ErrorCode::kInvalidInput, "all inputs must be finite"};
+    return {};
+  }
   if (in.altitude_km <= 120.0) {
     error = {ErrorCode::kInvalidInput, "altitude_km must be > 120"};
     return {};
   }
   if (in.latitude_deg < -90.0 || in.latitude_deg > 90.0) {
     error = {ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]"};
+    return {};
+  }
+  if (in.day_of_year < 1.0 || in.day_of_year > 366.0) {
+    error = {ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]"};
     return {};
   }
 
