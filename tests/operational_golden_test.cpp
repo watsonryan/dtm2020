@@ -11,6 +11,7 @@
 
 #include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_operational.hpp"
+#include "coeff_path_config.hpp"
 
 namespace {
 
@@ -73,18 +74,18 @@ bool ParseCsv(const std::filesystem::path& path, std::vector<Row>& rows) {
   return true;
 }
 
-std::filesystem::path ResolveOperationalCoeffPath() {
-  if (std::string(DTM2020_OPERATIONAL_COEFF_FILE).size() > 0) {
-    return std::filesystem::path(DTM2020_OPERATIONAL_COEFF_FILE);
-  }
-  return std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/DTM_2020_F107_Kp.dat";
-}
-
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
   const auto log = dtm2020::MakeStderrLogSink();
-  const auto coeff_file = ResolveOperationalCoeffPath();
+  const dtm2020::testutil::CoeffPathConfig cfg{
+      .runtime_override = (argc >= 2) ? std::filesystem::path(argv[1]) : std::filesystem::path{},
+      .repo_default = std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/DTM_2020_F107_Kp.dat",
+      .ci_fallback = std::string(DTM2020_OPERATIONAL_COEFF_FILE).empty()
+                         ? std::filesystem::path{}
+                         : std::filesystem::path(DTM2020_OPERATIONAL_COEFF_FILE),
+  };
+  const auto coeff_file = dtm2020::testutil::ResolveCoeffPath(cfg);
   const auto csv_file = std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/operational_vectors.csv";
 
   if (coeff_file.empty() || !std::filesystem::exists(coeff_file) || !std::filesystem::exists(csv_file)) {

@@ -114,19 +114,29 @@ This performs:
 
 The model loaders expect DTM2020 coefficient files from your external data source.
 
-External-data regression tests use CMake cache variables:
-- `DTM2020_OPERATIONAL_COEFF_FILE`
-- `DTM2020_RESEARCH_COEFF_FILE`
+External-data regression tests resolve coefficient paths in this order:
+1. runtime argument passed directly to the test executable
+2. repo-local defaults:
+   - `testdata/DTM_2020_F107_Kp.dat`
+   - `testdata/DTM_2020_F30_ap60.dat`
+3. CMake fallback variables (primarily for CI):
+   - `DTM2020_OPERATIONAL_COEFF_FILE`
+   - `DTM2020_RESEARCH_COEFF_FILE`
 
-Example:
+Runtime override example:
+
+```bash
+./build/macos-debug/tests/dtm2020_operational_golden /path/to/DTM_2020_F107_Kp.dat
+./build/macos-debug/tests/dtm2020_research_benchmark /path/to/DTM_2020_F30_ap60.dat
+```
+
+CMake fallback example (CI-oriented):
 
 ```bash
 cmake --preset macos-debug \
   -DDTM2020_OPERATIONAL_COEFF_FILE=/path/to/DTM_2020_F107_Kp.dat \
   -DDTM2020_RESEARCH_COEFF_FILE=/path/to/DTM_2020_F30_ap60.dat
 ```
-
-If not provided, tests look for these filenames under `testdata/` and skip if missing.
 
 ## CLI usage (operational)
 

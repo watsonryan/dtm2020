@@ -9,6 +9,7 @@
 
 #include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_research.hpp"
+#include "coeff_path_config.hpp"
 
 namespace {
 
@@ -18,19 +19,19 @@ bool NearlyEqualRelative(double a, double b, double rel_tol, double abs_floor) {
   return diff <= std::max(abs_floor, rel_tol * scale);
 }
 
-std::filesystem::path ResolveResearchCoeffPath() {
-  if (std::string(DTM2020_RESEARCH_COEFF_FILE).size() > 0) {
-    return std::filesystem::path(DTM2020_RESEARCH_COEFF_FILE);
-  }
-  return std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/DTM_2020_F30_ap60.dat";
-}
-
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
 #ifdef DTM2020_ENABLE_RESEARCH
   const auto log = dtm2020::MakeStderrLogSink();
-  const auto coeff_file = ResolveResearchCoeffPath();
+  const dtm2020::testutil::CoeffPathConfig cfg{
+      .runtime_override = (argc >= 2) ? std::filesystem::path(argv[1]) : std::filesystem::path{},
+      .repo_default = std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/DTM_2020_F30_ap60.dat",
+      .ci_fallback = std::string(DTM2020_RESEARCH_COEFF_FILE).empty()
+                         ? std::filesystem::path{}
+                         : std::filesystem::path(DTM2020_RESEARCH_COEFF_FILE),
+  };
+  const auto coeff_file = dtm2020::testutil::ResolveCoeffPath(cfg);
   if (coeff_file.empty() || !std::filesystem::exists(coeff_file)) {
     return EXIT_SUCCESS;
   }
