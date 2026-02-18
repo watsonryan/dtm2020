@@ -43,6 +43,9 @@ bool WriteSyntheticCoeffFile(const std::filesystem::path& file_path) {
       t0 = 500.0F;
       tp = 100.0F;
     }
+    if (i == 21) {
+      az2 = 2.0F;
+    }
 
     out << std::setw(4) << i << " "
         << std::uppercase << std::scientific << std::setprecision(6)
@@ -138,6 +141,50 @@ int main() {
 
   const float sigma = model->DensityUncertaintyPercent(base);
   if (!(std::isfinite(sigma) && sigma > 0.0F)) {
+    return EXIT_FAILURE;
+  }
+
+  const dtm2020::Dtm2020Operational::Options mcm_on{.emulate_mcm_transition = true};
+  const dtm2020::Dtm2020Operational::Options mcm_off{.emulate_mcm_transition = false};
+  auto model_mcm_on = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, error, mcm_on);
+  if (!model_mcm_on || error.code != dtm2020::ErrorCode::kNone) {
+    return EXIT_FAILURE;
+  }
+  auto model_mcm_off = dtm2020::Dtm2020Operational::LoadFromFile(tmp_file, error, mcm_off);
+  if (!model_mcm_off || error.code != dtm2020::ErrorCode::kNone) {
+    return EXIT_FAILURE;
+  }
+
+  auto out_mcm_on = model_mcm_on->Evaluate(
+      dtm2020::OperationalInputs{.altitude_km = 130.0,
+                                 .latitude_deg = base.latitude_deg,
+                                 .longitude_deg = base.longitude_deg,
+                                 .local_time_h = base.local_time_h,
+                                 .day_of_year = base.day_of_year,
+                                 .f107 = base.f107,
+                                 .f107m = base.f107m,
+                                 .kp_delayed_3h = base.kp_delayed_3h,
+                                 .kp_mean_24h = base.kp_mean_24h},
+      error);
+  if (error.code != dtm2020::ErrorCode::kNone) {
+    return EXIT_FAILURE;
+  }
+  auto out_mcm_off = model_mcm_off->Evaluate(
+      dtm2020::OperationalInputs{.altitude_km = 130.0,
+                                 .latitude_deg = base.latitude_deg,
+                                 .longitude_deg = base.longitude_deg,
+                                 .local_time_h = base.local_time_h,
+                                 .day_of_year = base.day_of_year,
+                                 .f107 = base.f107,
+                                 .f107m = base.f107m,
+                                 .kp_delayed_3h = base.kp_delayed_3h,
+                                 .kp_mean_24h = base.kp_mean_24h},
+      error);
+  if (error.code != dtm2020::ErrorCode::kNone) {
+    return EXIT_FAILURE;
+  }
+
+  if (AlmostEqual(out_mcm_on.density_g_cm3, out_mcm_off.density_g_cm3, 1e-22)) {
     return EXIT_FAILURE;
   }
 
