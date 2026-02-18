@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(DTM2020_BUILD_TESTS "Build tests" ON)
 option(DTM2020_STRICT_FP "Use strict floating-point flags" ON)
+option(DTM2020_ENABLE_RESEARCH "Build optional research-model scaffold" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(warnings)
@@ -17,6 +18,13 @@ add_library(dtm2020
   src/dtm2020_operational.cpp
   src/sigma_uncertainty.cpp
 )
+
+if(DTM2020_ENABLE_RESEARCH)
+  target_sources(dtm2020 PRIVATE
+    src/dtm2020_research.cpp
+  )
+  target_compile_definitions(dtm2020 PUBLIC DTM2020_ENABLE_RESEARCH=1)
+endif()
 
 add_library(dtm2020::dtm2020 ALIAS dtm2020)
 
