@@ -21,3 +21,11 @@ add_executable(dtm2020_operational_golden
 target_link_libraries(dtm2020_operational_golden PRIVATE dtm2020)
 
 add_test(NAME dtm2020_operational_golden COMMAND dtm2020_operational_golden)
+
+add_executable(dtm2020_research_smoke
+  research_smoke_test.cpp
+)
+
+target_link_libraries(dtm2020_research_smoke PRIVATE dtm2020)
+
+add_test(NAME dtm2020_research_smoke COMMAND dtm2020_research_smoke)
