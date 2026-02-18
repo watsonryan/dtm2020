@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_operational.hpp"
 
 namespace {
@@ -74,6 +75,7 @@ bool ParseCsv(const std::filesystem::path& path, std::vector<Row>& rows) {
 }  // namespace
 
 int main() {
+  const auto log = dtm2020::MakeStderrLogSink();
   const auto coeff_file = std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/operational_regression_coeff.dat";
   const auto csv_file = std::filesystem::path(DTM2020_SOURCE_DIR) / "testdata/operational_regression_vectors.csv";
   if (!std::filesystem::exists(coeff_file) || !std::filesystem::exists(csv_file)) {
@@ -94,7 +96,7 @@ int main() {
   for (const auto& row : rows) {
     const auto got = model.value().Evaluate(row.in);
     if (!got) {
-      std::cerr << "evaluate failed at row " << idx << ": " << got.error().message << "\n";
+      dtm2020::LogError(log, "evaluate failed at row " + std::to_string(idx), got.error());
       return EXIT_FAILURE;
     }
 
@@ -108,7 +110,7 @@ int main() {
         !NearlyEqualRelative(got.value().d_n2_g_cm3, row.out.d_n2_g_cm3, 1e-9, 1e-24) ||
         !NearlyEqualRelative(got.value().d_o2_g_cm3, row.out.d_o2_g_cm3, 1e-9, 1e-24) ||
         !NearlyEqualRelative(got.value().d_n_g_cm3, row.out.d_n_g_cm3, 1e-9, 1e-24)) {
-      std::cerr << "mismatch at row " << idx << "\n";
+      dtm2020::Log(log, dtm2020::LogLevel::kError, "mismatch at row " + std::to_string(idx));
       return EXIT_FAILURE;
     }
     ++idx;

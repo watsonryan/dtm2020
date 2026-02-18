@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <iostream>
 
+#include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_research.hpp"
 
 namespace {
@@ -20,6 +21,7 @@ bool NearlyEqualRelative(double a, double b, double rel_tol, double abs_floor) {
 
 int main() {
 #ifdef DTM2020_ENABLE_RESEARCH
+  const auto log = dtm2020::MakeStderrLogSink();
   const auto coeff_file = std::filesystem::path("/Users/rmw/Documents/code/mcm/data/DTM_2020_F30_ap60.dat");
   if (!std::filesystem::exists(coeff_file)) {
     return EXIT_SUCCESS;
@@ -27,7 +29,7 @@ int main() {
 
   auto model = dtm2020::Dtm2020Research::LoadFromFile(coeff_file);
   if (!model) {
-    std::cerr << "load failed: " << model.error().message << "\n";
+    dtm2020::LogError(log, "load failed", model.error());
     return EXIT_FAILURE;
   }
 
@@ -61,7 +63,7 @@ int main() {
     in.f30m = c.f30m;
     const auto out = model.value().Evaluate(in);
     if (!out) {
-      std::cerr << "eval failed: " << out.error().message << "\n";
+      dtm2020::LogError(log, "eval failed", out.error());
       return EXIT_FAILURE;
     }
 
@@ -69,10 +71,14 @@ int main() {
     const bool ok_tinf = NearlyEqualRelative(out.value().exospheric_temp_k, c.tinf, 2e-3, 0.8);
     const bool ok_ro = NearlyEqualRelative(out.value().density_g_cm3, c.ro, 1e-1, 1e-18);
     if (!ok_tz || !ok_tinf || !ok_ro) {
-      std::cerr << "case alt=" << c.alt_km << " f30=" << c.f30 << " f30m=" << c.f30m
-                << " got(tz,tinf,ro)=(" << out.value().temperature_k << ","
-                << out.value().exospheric_temp_k << "," << out.value().density_g_cm3 << ")"
-                << " expected=(" << c.tz << "," << c.tinf << "," << c.ro << ")\n";
+      dtm2020::Log(log,
+                   dtm2020::LogLevel::kError,
+                   "case alt=" + std::to_string(c.alt_km) + " f30=" + std::to_string(c.f30) +
+                       " f30m=" + std::to_string(c.f30m) + " got(tz,tinf,ro)=(" +
+                       std::to_string(out.value().temperature_k) + "," +
+                       std::to_string(out.value().exospheric_temp_k) + "," +
+                       std::to_string(out.value().density_g_cm3) + ") expected=(" +
+                       std::to_string(c.tz) + "," + std::to_string(c.tinf) + "," + std::to_string(c.ro) + ")");
       return EXIT_FAILURE;
     }
   }

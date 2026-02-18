@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_operational.hpp"
 
 namespace {
@@ -20,14 +21,17 @@ bool ParseDoubleArg(const char* text, double& out) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  const auto log = dtm2020::MakeStderrLogSink();
   if (argc != 11) {
-    std::cerr << "usage: dtm2020_cli <coeff_file> <alt_km> <lat_deg> <lon_deg> <lt_h> <doy> <f107> <f107m> <kp3h> <kp24h>\n";
+    dtm2020::Log(log,
+                 dtm2020::LogLevel::kError,
+                 "usage: dtm2020_cli <coeff_file> <alt_km> <lat_deg> <lon_deg> <lt_h> <doy> <f107> <f107m> <kp3h> <kp24h>");
     return EXIT_FAILURE;
   }
 
   auto model = dtm2020::Dtm2020Operational::LoadFromFile(argv[1]);
   if (!model) {
-    std::cerr << "load error: " << model.error().message << "\n";
+    dtm2020::LogError(log, "load error", model.error());
     return EXIT_FAILURE;
   }
 
@@ -37,13 +41,15 @@ int main(int argc, char** argv) {
       !ParseDoubleArg(argv[6], in.day_of_year) || !ParseDoubleArg(argv[7], in.f107) ||
       !ParseDoubleArg(argv[8], in.f107m) || !ParseDoubleArg(argv[9], in.kp_delayed_3h) ||
       !ParseDoubleArg(argv[10], in.kp_mean_24h)) {
-    std::cerr << "parse error: all numeric arguments must be valid floating-point values\n";
+    dtm2020::Log(log,
+                 dtm2020::LogLevel::kError,
+                 "parse error: all numeric arguments must be valid floating-point values");
     return EXIT_FAILURE;
   }
 
   auto out = model.value().Evaluate(in);
   if (!out) {
-    std::cerr << "evaluate error: " << out.error().message << "\n";
+    dtm2020::LogError(log, "evaluate error", out.error());
     return EXIT_FAILURE;
   }
 

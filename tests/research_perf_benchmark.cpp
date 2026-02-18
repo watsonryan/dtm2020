@@ -13,6 +13,7 @@
 #include <numeric>
 #include <vector>
 
+#include "dtm2020/logging.hpp"
 #include "dtm2020/dtm2020_research.hpp"
 
 namespace {
@@ -101,15 +102,16 @@ std::vector<dtm2020::ResearchInputs> MakeCorpus() {
 
 int main() {
 #ifdef DTM2020_ENABLE_RESEARCH
+  const auto log = dtm2020::MakeStderrLogSink();
   const auto coeff_file = std::filesystem::temp_directory_path() / "dtm2020_research_coeff_perf_benchmark.dat";
   if (!WriteSyntheticCoeffFile(coeff_file)) {
-    std::cerr << "failed to write synthetic coefficient file\n";
+    dtm2020::Log(log, dtm2020::LogLevel::kError, "failed to write synthetic coefficient file");
     return EXIT_FAILURE;
   }
 
   auto model = dtm2020::Dtm2020Research::LoadFromFile(coeff_file);
   if (!model) {
-    std::cerr << "load failed: " << model.error().message << "\n";
+    dtm2020::LogError(log, "load failed", model.error());
     return EXIT_FAILURE;
   }
 
@@ -122,7 +124,7 @@ int main() {
     for (const auto& in : corpus) {
       const auto out = model.value().Evaluate(in);
       if (!out) {
-        std::cerr << "warmup evaluate failed: " << out.error().message << "\n";
+        dtm2020::LogError(log, "warmup evaluate failed", out.error());
         return EXIT_FAILURE;
       }
       sink += out.value().density_g_cm3;
@@ -137,7 +139,7 @@ int main() {
       for (const auto& in : corpus) {
         const auto out = model.value().Evaluate(in);
         if (!out) {
-          std::cerr << "evaluate failed: " << out.error().message << "\n";
+          dtm2020::LogError(log, "evaluate failed", out.error());
           return EXIT_FAILURE;
         }
         sink += out.value().temperature_k * 1e-6;
