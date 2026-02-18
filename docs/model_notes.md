@@ -29,3 +29,9 @@ Implemented in this repo:
 ## Research Model Caution
 
 In `/Users/rmw/Documents/code/mcm/src/dtm2020/dtm2020_F30_Hp-subr.f90`, `ap60` is declared with dimension 7 but indexed up to 10. This must be resolved before a faithful `dtm5` port.
+
+## Research Port Status
+
+- `Dtm2020Research` now evaluates the `dtm5` path in C++.
+- Coefficient loading supports both tokenized rows and fixed-width Fortran rows used in `DTM_2020_F30_ap60.dat`.
+- Validation currently uses benchmark values from `Mod_DTM2020F30Hp60_Benchmark.f90` via `tests/research_benchmark_test.cpp`.
