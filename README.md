@@ -215,4 +215,5 @@ if (!out) {
 
 - `docs/model_notes.md`
 - `docs/numerical_fidelity.md`
+- `docs/operational_vs_research.md`
 - `docs/licensing.md`
