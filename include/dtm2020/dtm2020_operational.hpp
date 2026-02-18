@@ -6,6 +6,7 @@
 #include <array>
 #include <filesystem>
 #include <string>
+#include <string_view>
 
 #include "dtm2020/result.hpp"
 
@@ -27,7 +28,27 @@ enum class ErrorCode {
 struct Error {
   ErrorCode code{ErrorCode::kNone};
   std::string message{};
+  std::string detail{};
+  std::string location{};
 };
+
+/**
+ * @brief Convert ErrorCode to a stable string token.
+ */
+[[nodiscard]] std::string_view ToString(ErrorCode code);
+
+/**
+ * @brief Build a consistently formatted single-line error message.
+ */
+[[nodiscard]] std::string FormatError(const Error& error);
+
+/**
+ * @brief Helper for constructing rich Error payloads.
+ */
+[[nodiscard]] Error MakeError(ErrorCode code,
+                              std::string message,
+                              std::string detail = {},
+                              std::string location = {});
 
 /**
  * @brief Inputs for the operational DTM2020 model (F10.7/Kp forcing).

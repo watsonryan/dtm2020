@@ -273,7 +273,10 @@ Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
   std::ifstream in(coeff_file);
   if (!in.is_open()) {
     return Result<Dtm2020Operational, Error>::Err(
-        {ErrorCode::kFileOpenFailed, "Failed to open coefficient file"});
+        MakeError(ErrorCode::kFileOpenFailed,
+                  "Failed to open coefficient file",
+                  coeff_file.string(),
+                  "Dtm2020Operational::LoadFromFile"));
   }
 
   std::string title;
@@ -283,14 +286,20 @@ Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
   in >> npdtm;
   if (!in || npdtm <= 0 || npdtm > kNlatm) {
     return Result<Dtm2020Operational, Error>::Err(
-        {ErrorCode::kFileParseFailed, "Invalid npdtm in coefficient file"});
+        MakeError(ErrorCode::kFileParseFailed,
+                  "Invalid npdtm in coefficient file",
+                  coeff_file.string(),
+                  "Dtm2020Operational::LoadFromFile"));
   }
 
   for (int i = 0; i < npdtm; ++i) {
     int ni = 0;
     if (!(in >> ni)) {
       return Result<Dtm2020Operational, Error>::Err(
-          {ErrorCode::kFileParseFailed, "Failed while parsing coefficient index"});
+          MakeError(ErrorCode::kFileParseFailed,
+                    "Failed while parsing coefficient index",
+                    coeff_file.string(),
+                    "Dtm2020Operational::LoadFromFile"));
     }
 
     float dtt = 0.0F;
@@ -314,7 +323,10 @@ Result<Dtm2020Operational, Error> Dtm2020Operational::LoadFromFile(
         !ParseRealToken(in, coeffs.t0[fi]) || !ParseRealToken(in, dt0) ||
         !ParseRealToken(in, coeffs.tp[fi]) || !ParseRealToken(in, dtp)) {
       return Result<Dtm2020Operational, Error>::Err(
-          {ErrorCode::kFileParseFailed, "Failed while parsing coefficient row"});
+          MakeError(ErrorCode::kFileParseFailed,
+                    "Failed while parsing coefficient row",
+                    coeff_file.string(),
+                    "Dtm2020Operational::LoadFromFile"));
     }
   }
 
@@ -326,16 +338,20 @@ Result<Outputs, Error> Dtm2020Operational::Evaluate(const OperationalInputs& in)
       !std::isfinite(in.longitude_deg) || !std::isfinite(in.local_time_h) ||
       !std::isfinite(in.day_of_year) || !std::isfinite(in.f107) || !std::isfinite(in.f107m) ||
       !std::isfinite(in.kp_delayed_3h) || !std::isfinite(in.kp_mean_24h)) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "all inputs must be finite"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "all inputs must be finite", {}, "Dtm2020Operational::Evaluate"));
   }
   if (in.altitude_km <= 120.0) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "altitude_km must be > 120"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "altitude_km must be > 120", {}, "Dtm2020Operational::Evaluate"));
   }
   if (in.latitude_deg < -90.0 || in.latitude_deg > 90.0) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]"});
+    return Result<Outputs, Error>::Err(MakeError(
+        ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]", {}, "Dtm2020Operational::Evaluate"));
   }
   if (in.day_of_year < 1.0 || in.day_of_year > 366.0) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]", {}, "Dtm2020Operational::Evaluate"));
   }
 
   const float alti = static_cast<float>(in.altitude_km);
@@ -502,7 +518,8 @@ Result<Outputs, Error> Dtm2020Operational::Evaluate(const OperationalInputs& in)
   out.d_n_g_cm3 = static_cast<double>(d[5]);
 
   if (!std::isfinite(out.temperature_k) || !std::isfinite(out.density_g_cm3)) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "non-finite result generated"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "non-finite result generated", {}, "Dtm2020Operational::Evaluate"));
   }
 
   return Result<Outputs, Error>::Ok(out);

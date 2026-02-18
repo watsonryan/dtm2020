@@ -18,6 +18,7 @@ include(sanitizers)
 
 add_library(dtm2020
   src/dtm2020_operational.cpp
+  src/error_utils.cpp
   src/sigma_uncertainty.cpp
 )
 

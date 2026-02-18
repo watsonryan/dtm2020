@@ -375,7 +375,10 @@ Result<Dtm2020Research, Error> Dtm2020Research::LoadFromFile(const std::filesyst
   std::ifstream in(coeff_file);
   if (!in.is_open()) {
     return Result<Dtm2020Research, Error>::Err(
-        {ErrorCode::kFileOpenFailed, "Failed to open coefficient file"});
+        MakeError(ErrorCode::kFileOpenFailed,
+                  "Failed to open coefficient file",
+                  coeff_file.string(),
+                  "Dtm2020Research::LoadFromFile"));
   }
 
   std::string title;
@@ -390,7 +393,10 @@ Result<Dtm2020Research, Error> Dtm2020Research::LoadFromFile(const std::filesyst
   }
   if (npdtm <= 0 || npdtm > kNlatm) {
     return Result<Dtm2020Research, Error>::Err(
-        {ErrorCode::kFileParseFailed, "Invalid npdtm in coefficient file"});
+        MakeError(ErrorCode::kFileParseFailed,
+                  "Invalid npdtm in coefficient file",
+                  coeff_file.string(),
+                  "Dtm2020Research::LoadFromFile"));
   }
 
   for (int i = 0; i < npdtm; ++i) {
@@ -423,7 +429,10 @@ Result<Dtm2020Research, Error> Dtm2020Research::LoadFromFile(const std::filesyst
       ss >> ni;
       if (!ss) {
         return Result<Dtm2020Research, Error>::Err(
-            {ErrorCode::kFileParseFailed, "Failed while parsing coefficient index"});
+            MakeError(ErrorCode::kFileParseFailed,
+                      "Failed while parsing coefficient index",
+                      coeff_file.string(),
+                      "Dtm2020Research::LoadFromFile"));
       }
       for (int k = 0; k < 9; ++k) {
         std::string vtok;
@@ -431,7 +440,10 @@ Result<Dtm2020Research, Error> Dtm2020Research::LoadFromFile(const std::filesyst
         ss >> vtok >> utok;
         if (!ss) {
           return Result<Dtm2020Research, Error>::Err(
-              {ErrorCode::kFileParseFailed, "Failed while parsing tokenized coefficient row"});
+              MakeError(ErrorCode::kFileParseFailed,
+                        "Failed while parsing tokenized coefficient row",
+                        coeff_file.string(),
+                        "Dtm2020Research::LoadFromFile"));
         }
         std::replace(vtok.begin(), vtok.end(), 'D', 'E');
         std::replace(vtok.begin(), vtok.end(), 'd', 'e');
@@ -439,14 +451,20 @@ Result<Dtm2020Research, Error> Dtm2020Research::LoadFromFile(const std::filesyst
           values[k] = std::stof(vtok);
         } catch (...) {
           return Result<Dtm2020Research, Error>::Err(
-              {ErrorCode::kFileParseFailed, "Failed while parsing coefficient value token"});
+              MakeError(ErrorCode::kFileParseFailed,
+                        "Failed while parsing coefficient value token",
+                        coeff_file.string(),
+                        "Dtm2020Research::LoadFromFile"));
         }
       }
     }
 
     if (ni != i + 1) {
       return Result<Dtm2020Research, Error>::Err(
-          {ErrorCode::kFileParseFailed, "Unexpected coefficient row index"});
+          MakeError(ErrorCode::kFileParseFailed,
+                    "Unexpected coefficient row index",
+                    coeff_file.string(),
+                    "Dtm2020Research::LoadFromFile"));
     }
 
     const int fi = i + 1;
@@ -468,21 +486,26 @@ Result<Outputs, Error> Dtm2020Research::Evaluate(const ResearchInputs& in) const
   if (!std::isfinite(in.altitude_km) || !std::isfinite(in.latitude_deg) || !std::isfinite(in.longitude_deg) ||
       !std::isfinite(in.local_time_h) || !std::isfinite(in.day_of_year) || !std::isfinite(in.f30) ||
       !std::isfinite(in.f30m)) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "all scalar inputs must be finite"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "all scalar inputs must be finite", {}, "Dtm2020Research::Evaluate"));
   }
   for (double ap : in.ap60) {
     if (!std::isfinite(ap)) {
-      return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "ap60 inputs must be finite"});
+      return Result<Outputs, Error>::Err(
+          MakeError(ErrorCode::kInvalidInput, "ap60 inputs must be finite", {}, "Dtm2020Research::Evaluate"));
     }
   }
   if (in.altitude_km <= 120.0) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "altitude_km must be > 120"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "altitude_km must be > 120", {}, "Dtm2020Research::Evaluate"));
   }
   if (in.latitude_deg < -90.0 || in.latitude_deg > 90.0) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "latitude_deg must be in [-90, 90]", {}, "Dtm2020Research::Evaluate"));
   }
   if (in.day_of_year < 1.0 || in.day_of_year > 366.0) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "day_of_year must be in [1, 366]", {}, "Dtm2020Research::Evaluate"));
   }
 
   const float alti = static_cast<float>(in.altitude_km);
@@ -674,7 +697,8 @@ Result<Outputs, Error> Dtm2020Research::Evaluate(const ResearchInputs& in) const
   out.d_n_g_cm3 = static_cast<double>(d[5]);
 
   if (!std::isfinite(out.temperature_k) || !std::isfinite(out.density_g_cm3)) {
-    return Result<Outputs, Error>::Err({ErrorCode::kInvalidInput, "non-finite result generated"});
+    return Result<Outputs, Error>::Err(
+        MakeError(ErrorCode::kInvalidInput, "non-finite result generated", {}, "Dtm2020Research::Evaluate"));
   }
 
   return Result<Outputs, Error>::Ok(out);
