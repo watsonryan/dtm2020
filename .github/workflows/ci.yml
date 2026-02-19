@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure (Debug)
+        run: cmake --preset linux-debug
+
+      - name: Build (Debug)
+        run: cmake --build --preset linux-debug -j
+
+      - name: Test (Debug)
+        run: ctest --preset linux-debug --output-on-failure
+
+      - name: Configure (ASan)
+        run: cmake --preset linux-asan
+
+      - name: Build (ASan)
+        run: cmake --build --preset linux-asan -j
+
+      - name: Test (ASan)
+        run: ctest --preset linux-asan --output-on-failure
+
+      - name: Install/package smoke
+        env:
+          DTM2020_INSTALL_PREFIX: ${{ runner.temp }}/dtm2020-install
+        run: tools/validate_package_install.sh

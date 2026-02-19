@@ -145,6 +145,10 @@ Package install smoke check:
 tools/validate_package_install.sh
 ```
 
+Optional overrides:
+- `DTM2020_RELEASE_PRESET` (for non-default preset selection)
+- `DTM2020_INSTALL_PREFIX` (install destination, default `/tmp/dtm2020-install`)
+
 ## CLI usage (operational)
 
 Binary:
