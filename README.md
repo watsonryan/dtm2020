@@ -8,6 +8,23 @@ C++20 implementation of the Drag Temperature Model (DTM) 2020 model (https://ccm
 - density uncertainty function (`sigma_function`)
 - regression tests against generated/published reference vectors
 
+## Architecture
+
+```mermaid
+flowchart TD
+  A["Client code"] --> B["Dtm2020Operational or Dtm2020Research"]
+  B --> C["Coefficient loader"]
+  C --> D["Operational coefficients"]
+  C --> E["Research coefficients"]
+  B --> F["Evaluate"]
+  F --> G["Operational kernels dtm3 and gldtm"]
+  F --> H["Research kernel dtm5"]
+  B --> I["SigmaFunctionPercent"]
+  G --> J["Outputs"]
+  H --> J
+  I --> K["Density uncertainty percent"]
+```
+
 ## What is in this repo
 
 - `include/dtm2020/`: public API headers
@@ -265,3 +282,8 @@ if (!out) {
 - `docs/operational_vs_research.md`
 - `docs/thread_safety_and_performance.md`
 - `docs/licensing.md`
+
+## License
+
+This project is licensed under the GNU General Public License v3.0.
+See `LICENSE`.
