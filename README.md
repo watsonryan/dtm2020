@@ -2,7 +2,7 @@
 
 Author: Watson
 
-C++20 implementation of The Drag Temperature Model (DTM) 2020 model with:
+C++20 implementation of the Drag Temperature Model (DTM) 2020 model (https://ccmc.gsfc.nasa.gov/models/DTM~2020/) with:
 - operational model (`F10.7/Kp`) via `dtm3/gldtm`
 - research model (`F30/ap60`) via `dtm5` path
 - density uncertainty function (`sigma_function`)
