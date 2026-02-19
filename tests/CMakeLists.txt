@@ -98,3 +98,25 @@ dtm2020_apply_common_warnings(dtm2020_thread_safety_smoke)
 dtm2020_apply_runtime_flags(dtm2020_thread_safety_smoke)
 
 add_test(NAME dtm2020_thread_safety_smoke COMMAND dtm2020_thread_safety_smoke)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(_dtm2020_release_preset "macos-release")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(_dtm2020_release_preset "linux-release")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(_dtm2020_release_preset "windows-release")
+else()
+  set(_dtm2020_release_preset "")
+endif()
+
+if(_dtm2020_release_preset)
+  add_test(
+    NAME dtm2020_package_install_smoke
+    COMMAND ${CMAKE_COMMAND}
+      -DDTM2020_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+      -DDTM2020_BINARY_DIR=${CMAKE_BINARY_DIR}
+      -DDTM2020_CONSUMER_SOURCE_DIR=${CMAKE_SOURCE_DIR}/tests/package_consumer
+      -DDTM2020_RELEASE_PRESET=${_dtm2020_release_preset}
+      -P ${CMAKE_SOURCE_DIR}/tests/package_install_smoke.cmake
+  )
+endif()
