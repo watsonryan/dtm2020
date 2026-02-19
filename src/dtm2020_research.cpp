@@ -1,5 +1,7 @@
-// Author: Watson
-// Purpose: DTM2020 research model (dtm5) evaluation with F30/Hp60 drivers.
+/**
+ * @file dtm2020_research.cpp
+ * @brief Implementation of research DTM2020 (dtm5/F30-ap60) loading and evaluation.
+ */
 
 #include "dtm2020/dtm2020_research.hpp"
 

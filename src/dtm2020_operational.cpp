@@ -1,5 +1,7 @@
-// Author: Watson
-// Purpose: Operational DTM2020 evaluation and coefficient loading (MCM variant behavior).
+/**
+ * @file dtm2020_operational.cpp
+ * @brief Implementation of operational DTM2020 coefficient loading and evaluation.
+ */
 
 #include "dtm2020/dtm2020_operational.hpp"
 

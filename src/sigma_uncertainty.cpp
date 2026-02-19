@@ -1,5 +1,7 @@
-// Author: Watson
-// Purpose: Port of DTM2020 sigma_function.f90 uncertainty formulation.
+/**
+ * @file sigma_uncertainty.cpp
+ * @brief Implementation of DTM2020 sigma uncertainty formulation.
+ */
 
 #include "dtm2020/sigma_uncertainty.hpp"
 
