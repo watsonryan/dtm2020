@@ -27,4 +27,7 @@ fi
 echo "[4/5] Re-run golden tests (debug)"
 ctest --preset macos-debug --output-on-failure -R "operational_golden|research_benchmark"
 
-echo "[5/5] Validation complete"
+echo "[5/6] Validate install and downstream package consumption"
+tools/validate_package_install.sh
+
+echo "[6/6] Validation complete"

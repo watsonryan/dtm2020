@@ -109,6 +109,7 @@ This performs:
 2. ASan build + tests
 3. Operational Fortran vector regeneration (if `gfortran` is present)
 4. Golden/benchmark regression tests
+5. Release install + downstream `find_package(dtm2020)` consumer build/run
 
 ## Coefficient files
 
@@ -136,6 +137,12 @@ CMake fallback example (CI-oriented):
 cmake --preset macos-debug \
   -DDTM2020_OPERATIONAL_COEFF_FILE=/path/to/DTM_2020_F107_Kp.dat \
   -DDTM2020_RESEARCH_COEFF_FILE=/path/to/DTM_2020_F30_ap60.dat
+```
+
+Package install smoke check:
+
+```bash
+tools/validate_package_install.sh
 ```
 
 ## CLI usage (operational)
